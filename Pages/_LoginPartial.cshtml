@@ -1,0 +1,12 @@
+@if (User.Identity.IsAuthenticated)
+{
+    <ul>
+    <li><a href="/Account/SignedOutModel" >Log out</a></li>
+    </ul>
+}
+else
+{
+    <ul>
+        <li><a asp-page="/Account/Login">Log in</a></li>
+    </ul>
+}

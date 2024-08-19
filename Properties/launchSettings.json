@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:51186",
+      "sslPort": 44355
+    }
+  },
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5292",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:7034;http://localhost:5292",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "TINYIDP_BDDCONFIG__SERVERNAME": "nas2.taieb.fr:49154",
+        "TINYIDP_BDDCONFIG__BDDNAME": "tinyidp",
+        "TINYIDP_BDDCONFIG__USERNAME": "tinyidp",
+        "TINYIDP_SECU__PATH": ".",
+        "TINYIDP_IDP__BASE_URL_IDP": "https://localhost:7034",
+        "TINYIDP_IDP__TOKEN_LIFETIME": "5"
+      }
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+@page 
+@using tinyidp.Pages.Models
+@using tinyidp.Pages.Account
+@model IdentPage
+@{
+    ViewData["Title"] = "Login";
+}
+<h1>@ViewData["Title"]</h1>
+<div id="error">
+    <span class="error">
+@if (Model._input != null && Model._input!.ExceptionMessage != null)
+{    
+    @Model._input!.ExceptionMessage
+}
+    </span>
+</div>
+<h3>Ident</h3>
+<div id="add-block" class="shadowbox">
+<form method="post">
+    <input type="hidden" asp-for="_scope" class="form-control"/>
+    <input type="hidden" asp-for="_state" class="form-control"/>
+    <input type="hidden" asp-for="_redirectUri" class="form-control"/>
+    <input type="hidden" asp-for="_client_id" class="form-control"/>
+    <input type="hidden" asp-for="_code_challenge" class="form-control"/>
+    <input type="hidden" asp-for="_code_challenge_method" class="form-control"/>
+    <table>
+    <tr>
+    <td>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <label for="Login">Login</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input id="Login" asp-for="_input!.Login" class="form-control"/>
+        <span asp-validation-for="_input!.Login" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <label for="Password">Password</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input type="password" asp-for="_input!.Password" class="form-control"/>
+        <span asp-validation-for="_input!.Password" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td colspan="2">
+            <input type="submit" value="Login"/>
+    </td>
+    </tr>
+    </table>
+</form>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,74 @@
+@page 
+@using tinyidp.Pages.Kids
+@using tinyidp.Pages.Models
+@model DeleteKid
+@{
+    ViewData["Title"] = "Key Managment";
+}
+<h1>@ViewData["Title"]</h1>
+<div id="error">
+    <span class="error">
+@if (Model._kidDelete != null && Model._kidDelete!.ExceptionMessage != null)
+{    
+    @Model._kidDelete!.ExceptionMessage
+}
+    </span>
+</div>
+
+@if (Model._kidDelete != null && Model._kidDelete!.CanAccess)
+{
+
+<h3>Delete kid</h3>
+<div id="add-block" class="shadowbox">
+<form method="post">
+    <table>
+    <tr>
+    <td>
+        <label for="Id">Id</label>
+    </td>
+    <td>
+        @Html.DisplayFor(model => model._kidDelete!.Id)
+        <input type="hidden" asp-for="_kidDelete!.Id"/>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="KID">KID</label>
+    </td>
+    <td>
+        @Html.DisplayFor(model => model._kidDelete!.Kid)
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="Algo">Algo</label>
+    </td>
+    <td>
+        @Html.DisplayFor(model => model._kidDelete!.Algo)
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="State">State</label>
+    </td>
+    <td>
+        @Html.DisplayFor(model => model._kidDelete!.State)
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="CreationDate">Creation Date </label>
+    </td>
+    <td>
+        @Html.DisplayFor(model => model._kidDelete!.CreationDate)
+    </td>
+    </tr>
+    <tr>
+    <td colspan="2">
+            <input type="submit" value="Delete"/>
+    </td>
+    </tr>
+    </table>
+</form>
+</div>
+}

@@ -1,0 +1,86 @@
+@page 
+@using tinyidp.Pages.Models
+@model KidsViewModel
+@{
+    ViewData["Title"] = "KIDs Managment";
+}
+<h1>@ViewData["Title"]</h1>
+<div id="error">
+    <span class="error">
+@if (Model.ErrorMessage != null)
+{    
+    @Model.ErrorMessage
+}
+    </span>
+</div>
+
+@if (Model.CanAccess)
+{
+<a asp-page="./Create" asp-route-id="">Add new Key</a>
+
+<h3>List of KIDs</h3>
+<div id="list" class="shadowlist">
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model._kidsView[0].Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model._kidsView[0].Kid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model._kidsView[0].Algo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model._kidsView[0].State)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model._kidsView[0].CreationDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model._kidsView[0].Valid)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model._kidsView[0].KeyError)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model._kidsView) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Kid)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Algo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.State)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CreationDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Valid)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.KeyError)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a>
+                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+</div>
+}
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

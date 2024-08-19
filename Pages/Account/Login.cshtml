@@ -1,0 +1,69 @@
+@page 
+@using tinyidp.Pages.Models
+@using tinyidp.Pages.Account
+@model LoginPage
+@{
+    ViewData["Title"] = "Login";
+}
+<script>
+function createURL() {
+var login = document.getElementById("Login").value;
+var url = "/Account/ChangePwd?ident=" + login;
+document.getElementById("chpwd").href = url;
+}
+</script>
+<h1>@ViewData["Title"]</h1>
+<div id="error">
+    <span class="error">
+@if (Model._input != null && Model._input!.ExceptionMessage != null)
+{    
+    @Model._input!.ExceptionMessage
+}
+    </span>
+</div>
+<h3>Login</h3>
+<div id="add-block" class="shadowbox">
+<form method="post">
+    <table>
+    <tr>
+    <td>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <label for="Login">Login</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input id="Login" asp-for="_input!.Login" class="form-control"/>
+        <span asp-validation-for="_input!.Login" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <label for="Password">Password</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input type="password" asp-for="_input!.Password" class="form-control"/>
+        <span asp-validation-for="_input!.Password" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td colspan="2">
+            <input type="submit" value="Login"/>
+    </td>
+    </tr>
+    <tr>
+    <td colspan="2">
+            <a id="chpwd" onclick="createURL()" href="">Change password</a>
+    </td>
+    </tr>
+    </table>
+</form>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

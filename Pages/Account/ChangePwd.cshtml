@@ -1,0 +1,59 @@
+@page 
+@using tinyidp.Pages.Models
+@using tinyidp.Pages.Account
+@model ChangePwdPage
+@{
+    ViewData["Title"] = "Change Password";
+}
+<h1>@ViewData["Title"]</h1>
+<div id="error">
+    <span class="error">
+@if (Model._changePwdModel != null && Model._changePwdModel!.ExceptionMessage != null)
+{    
+    @Model._changePwdModel!.ExceptionMessage
+}
+    </span>
+</div>
+<h3>Edit credential</h3>
+<div id="add-block" class="shadowbox">
+<form method="post">
+    <input type="hidden" asp-for="_changePwdModel.Id" class="form-control"/>
+    <input type="hidden" asp-for="_changePwdModel.Ident" class="form-control"/>
+    <input type="hidden" asp-for="_changePwdModel.Pass" class="form-control"/>
+    <table>
+    <tr>
+    <td>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <label for="Login">Ident</label>
+    </td>
+    <td>
+        <div class="form-group">
+        @Html.DisplayFor(model => model._changePwdModel!.Ident)
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <label for="Password">Password</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input type="password" asp-for="_changePwdModel.PassNew" class="form-control"/>
+        <span asp-validation-for="_changePwdModel.PassNew" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td colspan="2">
+            <input type="submit" value="Change Password"/>
+    </td>
+    </tr>
+    </table>
+</form>
+</div>
+
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
