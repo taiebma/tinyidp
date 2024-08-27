@@ -44,7 +44,7 @@ builder.Services.AddRazorPages(options =>
 
 builder.Services.AddDbContext<TinyidpContext>(options =>
 {
-    options.EnableSensitiveDataLogging();
+//    options.EnableSensitiveDataLogging();
 }
 );
 

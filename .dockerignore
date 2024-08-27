@@ -1,0 +1,6 @@
+appsettings.Development.json
+Properties
+Dockerfile*
+**/[b|B]in/
+**/[O|o]bj/
+appsettings.Development.json

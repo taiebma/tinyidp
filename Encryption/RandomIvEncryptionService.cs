@@ -6,15 +6,27 @@ namespace tinyidp.Encryption;
 public class RandomIvEncryptionService : IEncryptionService
 {
     private readonly IConfiguration _conf;
+    private readonly ILogger<RandomIvEncryptionService> _logger;
     private byte[] encryptionKey;
 
-    public RandomIvEncryptionService(IConfiguration conf)
+    public RandomIvEncryptionService(IConfiguration conf, ILogger<RandomIvEncryptionService> logger)
     {
         _conf = conf;
+        _logger = logger;
 
-        string? key = _conf.GetSection("TINYIDP_SECU")?.GetValue<string>("Key");
+        string? key;
+        try
+        {
+            key = _conf.GetSection("TINYIDP_SECU")?.GetValue<string>("Key");
+            _logger.LogInformation("Key found : " + key);
+        }
+        catch 
+        {
+            key = null;
+        }
         if (key == null)
         {
+            _logger.LogInformation("No key found. Generating new one.");
             key = GenerateKey();
             SaveKey(key);
         }
@@ -89,5 +101,6 @@ public class RandomIvEncryptionService : IEncryptionService
         StreamWriter writer = new StreamWriter(String.Format("{0}/tinyidp.key", Environment.GetEnvironmentVariable("TINYIDP_SECU__PATH")));
         writer.WriteLine("{ \"TINYIDP_SECU:Key\": \"" + key + "\" }");
         writer.Close();
+        _logger.LogInformation("New key saved");
     }
 }

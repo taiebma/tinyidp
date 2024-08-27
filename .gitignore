@@ -1,0 +1,13 @@
+bin
+obj
+.DS_Store
+*.tar
+launch.json
+certs
+_site
+api
+build.sh
+ssl
+tinyidp.key
+*.nettrace
+*.speedscope.json
