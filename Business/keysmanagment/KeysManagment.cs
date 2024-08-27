@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using tinyidp.Business.BusinessEntities;
 using tinyidp.Encryption;
 using tinyidp.infrastructure.bdd;
+using tinyidp.Exceptions;
 
 namespace tinyidp.infrastructure.keysmanagment;
 
@@ -56,13 +57,64 @@ public class KeysManagment : IKeysManagment
 
     public KidBusinessEntity GenNewKey(AlgoType algo, string kid)
     {
+        KidBusinessEntity key;
+
+        switch (algo )
+        {
+            case AlgoType.RSA:
+                key = GenNewRSAKey(kid);
+                break;
+            case AlgoType.ECC:
+                key = GenNewECCKey(kid);
+                break;
+            default:
+                throw new TinyidpKeyException("Algorithm unknown");
+        }
+        return key;
+    }
+
+    public KidBusinessEntity GenNewRSAKey(string kid)
+    {
         using var rsa = RSA.Create(2048);
         KidBusinessEntity newkid = new KidBusinessEntity();
-        newkid.Algo = algo;
+        newkid.Algo = AlgoType.RSA;
         newkid.CreationDate = DateTime.Now;
         newkid.State = KidState.Inactive;
         newkid.PrivateKey = rsa.ExportRSAPrivateKeyPem();
         newkid.PublicKey = rsa.ExportRSAPublicKeyPem();
+        if (String.IsNullOrEmpty(kid))
+        {
+            newkid.Kid1 = newkid.PublicKey.GetHashString();
+        }
+        else
+        {
+            newkid.Kid1 = kid;
+        }
+
+        Kid kidEntity = newkid.ToEntity(_encryptionService);
+        _kidRepository.Add(kidEntity);
+
+        if (_listKeys == null)
+        {
+            GetKeys();
+        }
+        else
+        {
+            _listKeys.Add(newkid);
+        }
+
+        return newkid;
+    }
+
+    public KidBusinessEntity GenNewECCKey(string kid)
+    {
+        using var ecc = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        KidBusinessEntity newkid = new KidBusinessEntity();
+        newkid.Algo = AlgoType.ECC;
+        newkid.CreationDate = DateTime.Now;
+        newkid.State = KidState.Inactive;
+        newkid.PrivateKey = ecc.ExportECPrivateKeyPem();
+        newkid.PublicKey = ecc.ExportSubjectPublicKeyInfoPem();
         if (String.IsNullOrEmpty(kid))
         {
             newkid.Kid1 = newkid.PublicKey.GetHashString();
@@ -97,13 +149,13 @@ public class KeysManagment : IKeysManagment
         return _listKeys?.Where(p => p.Id  == id).First();
     }
 
-    public KidBusinessEntity LastActive(AlgoType algo)
+    public KidBusinessEntity? LastActive(AlgoType algo)
     {
         if (_listKeys == null)
         {
             throw new Exception("No keys");
         }
-        return _listKeys.Last(p => p.Algo == algo 
+        return _listKeys.LastOrDefault(p => p.Algo == algo 
             && p.State == KidState.Active
             && p.Valid);
     }
@@ -128,10 +180,9 @@ public class KeysManagment : IKeysManagment
         _kidRepository.Remove(kid.ToEntity(_encryptionService));
     }
 
-    public string GenerateJWTToken(IEnumerable<string> scopes, IEnumerable<string> audience, string? sub)
+    public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime)
     {
         string issuer = _conf.GetSection("TINYIDP_IDP").GetValue<string>("BASE_URL_IDP")??"https://localhost:7034/";
-        int tokenLifetime = _conf.GetSection("TINYIDP_IDP").GetValue<int>("TOKEN_LIFETIME");
         var claims = new List<Claim>
         {
             new Claim("scope", string.Join(' ', scopes))
@@ -146,8 +197,25 @@ public class KeysManagment : IKeysManagment
 
         RSACryptoServiceProvider provider1 = new RSACryptoServiceProvider();
 
-        KidBusinessEntity lastKid = LastActive(AlgoType.RSA);
-        RsaSecurityKey rsaSecurityKey = lastKid.GetRsaPrivateSecurityKey();
+        KidBusinessEntity? lastKid = LastActive(keyType.ToAlgoType());
+        SigningCredentials signingCredentials;
+
+        if (lastKid == null)
+            throw new TinyidpKeyException("No available key found for requested algo");
+
+        switch (lastKid.Algo)
+        {
+            case AlgoType.RSA:
+                RsaSecurityKey rsaSecurityKey = lastKid.GetRsaPrivateSecurityKey();
+                signingCredentials = new SigningCredentials(rsaSecurityKey, SecurityAlgorithms.RsaSha256);
+                break;
+            case AlgoType.ECC:
+                ECDsaSecurityKey eccSecurityKey = lastKid.GetEccPrivateSecurityKey();
+                signingCredentials = new SigningCredentials(eccSecurityKey, SecurityAlgorithms.EcdsaSha256);
+                break;
+            default:
+                throw new TinyidpKeyException("Algo unknown for signing token");
+        }
         JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
 
         var token1 = new JwtSecurityToken(
@@ -155,8 +223,8 @@ public class KeysManagment : IKeysManagment
             JsonSerializer.Serialize(audience), 
             claims, 
             notBefore: DateTime.UtcNow,
-            expires: DateTime.UtcNow.AddMinutes(tokenLifetime), 
-            signingCredentials: new SigningCredentials(rsaSecurityKey, SecurityAlgorithms.RsaSha256)
+            expires: DateTime.UtcNow.AddMinutes(lifeTime), 
+            signingCredentials: signingCredentials
             );
         token1.Header.Add("kid", lastKid.Kid1);
         string access_token = handler.WriteToken(token1);

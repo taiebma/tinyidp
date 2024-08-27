@@ -47,4 +47,6 @@ public class CredentialEditModel
     public string? RedirectUri { get; set; } = null!;
 
     public bool CanAccess { get; set; } = false;
+
+    public AlgoKeyType KeyType { get; set; }
 }

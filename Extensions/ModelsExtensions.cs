@@ -23,7 +23,8 @@ public static class ModelsExtensions
             AllowedScopes = entity.AllowedScopes?.Split(' ')??new string[0],
             Audiences = entity.Audiences?.Split(' ')??new string[0],
             AuthorizationCode = entity.AuthorizationCode,
-            RedirectUri = entity.RedirectUri
+            RedirectUri = entity.RedirectUri, 
+            KeyType = entity.KeyType
         };
     }
 
@@ -44,7 +45,8 @@ public static class ModelsExtensions
             AllowedScopes = entity.AllowedScopes?.Split(' ')??new string[0],
             Audiences = entity.Audiences?.Split(' ')??new string[0],
             AuthorizationCode = entity.AuthorizationCode,
-            RedirectUri = entity.RedirectUri
+            RedirectUri = entity.RedirectUri, 
+            KeyType = entity.KeyType
         };
     }
 
@@ -61,7 +63,8 @@ public static class ModelsExtensions
             AllowedScopes = string.Join(' ', entity.AllowedScopes??new List<string>()),
             Audiences = string.Join(' ', entity.Audiences??new List<string>()),
             AuthorizationCode = entity.AuthorizationCode,
-            RedirectUri = entity.RedirectUri
+            RedirectUri = entity.RedirectUri, 
+            KeyType = entity.KeyType
         };
     }
 
@@ -82,7 +85,8 @@ public static class ModelsExtensions
             AllowedScopes = string.Join(' ', entity.AllowedScopes??new List<string>()),
             Audiences = string.Join(' ', entity.Audiences??new List<string>()),
             AuthorizationCode = entity.AuthorizationCode,
-            RedirectUri = entity.RedirectUri
+            RedirectUri = entity.RedirectUri, 
+            KeyType = entity.KeyType
         };
     }
 
@@ -117,7 +121,8 @@ public static class ModelsExtensions
             TokenMaxMinuteValidity = entity.TokenMaxMinuteValidity, 
             Id = entity.Id, 
             CreationDate = entity.CreationDate, 
-            LastIdent = entity.LastIdent
+            LastIdent = entity.LastIdent, 
+            KeyType = entity.KeyType
         };
     }
 

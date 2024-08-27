@@ -10,8 +10,8 @@ public interface IKeysManagment
     public KidBusinessEntity GenNewKey(AlgoType algo, string kid);
     public KidBusinessEntity? GetKeyByKid(string kid);
     public KidBusinessEntity? GetKeyById(int id);
-    public KidBusinessEntity LastActive(AlgoType algo);
+    public KidBusinessEntity? LastActive(AlgoType algo);
     public void Update(KidBusinessEntity kid);
     public void Remove(KidBusinessEntity kid);
-    public string GenerateJWTToken(IEnumerable<string> scopes, IEnumerable<string> audience, string? sub);
+    public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime);
 }

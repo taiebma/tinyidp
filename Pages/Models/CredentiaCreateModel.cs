@@ -40,4 +40,6 @@ public class CredentialCreateModel
     public string? ExceptionMessage { get; set; } = null;
 
     public bool CanAccess { get; set; } = false;
+
+    public AlgoKeyType KeyType { get; set; }
 }

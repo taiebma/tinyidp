@@ -50,7 +50,7 @@ public class RefreshToken : ITokenStrategy
         {
             throw new TinyidpTokenException("Token and creation date are inconsistent", "invalid_token");            
         }
-        if (client.CreationDateRefreshToken.Value.AddDays(1) < DateTime.Now)
+        if (client.CreationDateRefreshToken.Value.AddMinutes(client.RefreshMaxMinuteValidity) < DateTime.Now)
         {
             throw new TinyidpTokenException("Refresh token expired", "invalid_token");
         }
@@ -69,7 +69,7 @@ public class RefreshToken : ITokenStrategy
 
         TokenResponseBusiness resp = new TokenResponseBusiness();
         resp.access_token = await Task.Run( () => _keysManagment.GenerateJWTToken(
-            refreshTokenResponse.Scopes, refreshTokenResponse.Audiences, refreshTokenResponse.Ident));
+            refreshTokenResponse.Algo, refreshTokenResponse.Scopes, refreshTokenResponse.Audiences, refreshTokenResponse.Ident, refreshTokenResponse.LifeTime));
 
         resp.token_type = "Bearer";
 

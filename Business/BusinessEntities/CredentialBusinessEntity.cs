@@ -41,6 +41,8 @@ public partial class CredentialBusinessEntity
 
     public DateTime? CreationDateRefreshToken { get; set; }
 
+    public AlgoKeyType KeyType { get; set; } 
+
     public CredentialBusinessEntity()
     {
         CreationDate = DateTime.Now;

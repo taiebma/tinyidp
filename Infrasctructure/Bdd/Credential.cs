@@ -42,4 +42,6 @@ public partial class Credential
     public string? RefreshToken { get; set; } = null!;
 
     public DateTime? CreationDateRefreshToken { get; set; }
+
+    public int KeyType { get; set; }
 }

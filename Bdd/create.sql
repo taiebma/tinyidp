@@ -18,6 +18,7 @@ CREATE TABLE public.credentials (
 	code_challenge_method varchar,
 	refresh_token varchar,
 	creation_date_rtoken timestamp NULL,
+	key_type int4 DEFAULT 1 NOT NULL,
 	CONSTRAINT credentials_pk PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX credentials_ident_idx ON public.credentials USING btree (ident);

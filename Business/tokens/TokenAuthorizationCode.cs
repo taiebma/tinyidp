@@ -82,7 +82,7 @@ public class TokenAuthorizationCode : ITokenStrategy
 
         TokenResponseBusiness resp = new TokenResponseBusiness();
         resp.access_token = _keysManagment.GenerateJWTToken(
-            scopes, client.Audiences??new List<string>(), user.Ident);
+            client.KeyType, scopes, client.Audiences??new List<string>(), user.Ident, client.TokenMaxMinuteValidity);
 
         resp.token_type = "Bearer";
 
@@ -91,7 +91,9 @@ public class TokenAuthorizationCode : ITokenStrategy
         {
             Scopes = scopes, 
             Audiences = client.Audiences??new List<string>(), 
-            Ident = user.Ident
+            Ident = user.Ident,
+            Algo = client.KeyType, 
+            LifeTime = client.TokenMaxMinuteValidity
         };
         resp.refreshTokenResponse = tokenResp;
 

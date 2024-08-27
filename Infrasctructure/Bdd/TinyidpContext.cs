@@ -150,6 +150,7 @@ public partial class TinyidpContext : DbContext
             entity.Property(e => e.CreationDateRefreshToken)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("creation_date_rtoken");
+            entity.Property(e => e.KeyType).HasColumnName("key_type");
         });
 
         modelBuilder.Entity<Kid>(entity =>

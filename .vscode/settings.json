@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "BDDCONFIG",
+        "Buis",
         "Ciphertext",
         "cyphertext",
         "decryptor",
@@ -8,7 +9,9 @@
         "incommon",
         "IPKCE",
         "keysmanagment",
+        "newkid",
         "PKCE",
+        "rtoken",
         "SECU",
         "Tinyidp"
     ]

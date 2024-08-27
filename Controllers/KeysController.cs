@@ -30,8 +30,20 @@ public class KeysController: Controller
         KeysResponse resp = new KeysResponse();
         resp.Keys = kids.Select(
             p => {
-                var webKey = JsonWebKeyConverter.ConvertFromRSASecurityKey(
-                p.GetRsaSecurityKey());
+                JsonWebKey webKey;
+                switch (p.Algo)
+                {
+                    case AlgoType.RSA:
+                        webKey = JsonWebKeyConverter.ConvertFromRSASecurityKey(p.GetRsaSecurityKey());
+                        break;
+                    case AlgoType.ECC:
+                        webKey = JsonWebKeyConverter.ConvertFromECDsaSecurityKey(p.GetEccSecurityKey());
+                        break;
+                    default:
+                        webKey = new JsonWebKey();
+                        break;
+                }
+                
                 webKey.KeyId = p.Kid1;
                 return webKey;
             }

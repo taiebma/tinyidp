@@ -39,6 +39,20 @@ public static class ToolsExtensions
         return new RsaSecurityKey(rsa);
     }
 
+    public static ECDsaSecurityKey GetEccSecurityKey(this KidBusinessEntity kid) 
+    {
+        ECDsa ecc = ECDsa.Create();
+        ecc.ImportFromPem(kid.PublicKey.ToCharArray());
+        return new ECDsaSecurityKey(ecc);
+    }
+
+    public static ECDsaSecurityKey GetEccPrivateSecurityKey(this KidBusinessEntity kid) 
+    {
+        ECDsa ecc = ECDsa.Create();
+        ecc.ImportFromPem(kid.PrivateKey.ToCharArray());
+        return new ECDsaSecurityKey(ecc);
+    }
+
     public static string GetLocalUrl(this IUrlHelper urlHelper, string? localUrl)
     {
         if (localUrl == null || !urlHelper.IsLocalUrl(localUrl))

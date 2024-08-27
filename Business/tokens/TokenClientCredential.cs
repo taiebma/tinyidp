@@ -52,7 +52,7 @@ public class TokenClientCredential : ITokenStrategy
         }
         TokenResponseBusiness resp = new TokenResponseBusiness();
         resp.access_token = _keysManagment.GenerateJWTToken(
-            scopes, client.Audiences??new List<string>(), null);
+            client.KeyType, scopes, client.Audiences??new List<string>(), null, client.TokenMaxMinuteValidity);
 
         resp.token_type = "Bearer";
 
@@ -61,7 +61,9 @@ public class TokenClientCredential : ITokenStrategy
         {
             Scopes = scopes, 
             Audiences = client.Audiences??new List<string>(), 
-            Ident = null
+            Ident = null, 
+            Algo = client.KeyType, 
+            LifeTime = client.TokenMaxMinuteValidity
         };
         resp.refreshTokenResponse = tokenResp;
 

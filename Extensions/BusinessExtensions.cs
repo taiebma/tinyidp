@@ -29,7 +29,8 @@ public static class BusinessExtensions
             CodeChallenge = entity.CodeChallenge,
             CodeChallengeMethod = entity.CodeChallengeMethod,
             RefreshToken = entity.RefreshToken,
-            CreationDateRefreshToken = entity.CreationDateRefreshToken
+            CreationDateRefreshToken = entity.CreationDateRefreshToken, 
+            KeyType = (int)entity.KeyType
         };
     }
 
@@ -55,7 +56,9 @@ public static class BusinessExtensions
             CodeChallenge = entity.CodeChallenge,
             CodeChallengeMethod = entity.CodeChallengeMethod,
             RefreshToken = entity.RefreshToken,
-            CreationDateRefreshToken = entity.CreationDateRefreshToken
+            CreationDateRefreshToken = entity.CreationDateRefreshToken, 
+            KeyType = (AlgoKeyType)Enum.Parse(typeof(AlgoKeyType), entity.KeyType.ToString())
+            
         };
     }
 
@@ -115,5 +118,17 @@ public static class BusinessExtensions
             state = authorizationRequest.state
             
         };
+    }
+
+    public static AlgoType ToAlgoType(this AlgoKeyType algoKeyType)
+    {
+        switch (algoKeyType)
+        {
+            case AlgoKeyType.RS256:
+                return AlgoType.RSA;
+            case AlgoKeyType.ES256:
+                return AlgoType.ECC;
+        }
+        return AlgoType.RSA;
     }
 }

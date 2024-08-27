@@ -48,6 +48,13 @@ public class OAuthController : ControllerBase
             resp.error_description = ex.error_description;
             return BadRequest(resp);
         }
+        catch(TinyidpKeyException ex)
+        {
+            resp = new TokenResponse();
+            resp.Error = ex.Message;
+            resp.error_description = "";
+            return BadRequest(resp);
+        }
         return Ok(resp);
     }
 

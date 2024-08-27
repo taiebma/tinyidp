@@ -30,4 +30,6 @@ public class CredentialView
     public DateTime? LastIdent { get; set; }
 
     public bool CanAccess { get; set; } = false;
+
+    public AlgoKeyType KeyType { get; set; }
 }
