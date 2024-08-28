@@ -245,8 +245,8 @@ public class CredentialBusiness : ICredentialBusiness
         user.AuthorizationCode = code;
         _credentialRepository.Update(user);
 
-        client.AuthorizationCode = code;
         clientResp = client.ToBusiness();
+        clientResp.AuthorizationCode = code;
         return clientResp;
     }
 

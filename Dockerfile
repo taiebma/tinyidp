@@ -21,7 +21,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine3.18-$TARGETARCH
 WORKDIR /app
 COPY --from=build /app .
-RUN mkdir certs
+RUN mkdir certs param
 COPY certs/nas2.pfx certs
 EXPOSE 8080/tcp
 EXPOSE 8081/tcp

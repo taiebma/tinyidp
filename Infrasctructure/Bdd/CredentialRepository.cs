@@ -90,7 +90,7 @@ public class CredentialRepository : ICredentialRepository
 
     public Task<List<Credential>> GetAll( )
     {
-        return _tinyidpContext.Credentials.OrderBy(p => p.Id).ToListAsync();
+        return _tinyidpContext.Credentials.AsNoTracking().OrderBy(p => p.Id).ToListAsync();
     }
 
     public void SaveChanges()
