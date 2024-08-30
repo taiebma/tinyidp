@@ -48,5 +48,5 @@ public class CredentialEditModel
 
     public bool CanAccess { get; set; } = false;
 
-    public AlgoKeyType KeyType { get; set; }
+    public AlgoKeyType? KeyType { get; set; }
 }

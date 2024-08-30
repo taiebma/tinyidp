@@ -24,7 +24,7 @@ public static class ModelsExtensions
             Audiences = entity.Audiences?.Split(' ')??new string[0],
             AuthorizationCode = entity.AuthorizationCode,
             RedirectUri = entity.RedirectUri, 
-            KeyType = entity.KeyType
+            KeyType = entity.KeyType??AlgoKeyType.None
         };
     }
 
@@ -46,7 +46,7 @@ public static class ModelsExtensions
             Audiences = entity.Audiences?.Split(' ')??new string[0],
             AuthorizationCode = entity.AuthorizationCode,
             RedirectUri = entity.RedirectUri, 
-            KeyType = entity.KeyType
+            KeyType = entity.KeyType??AlgoKeyType.None
         };
     }
 

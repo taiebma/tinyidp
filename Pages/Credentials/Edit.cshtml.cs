@@ -4,6 +4,7 @@ using tinyidp.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using tinyidp.Pages.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace tinyidp.Pages.Credentials;
 
@@ -41,6 +42,10 @@ public class EditModel : PageModel
     {
         if (!ModelState.IsValid)
         {
+            if (_credentialEdit != null)
+                _credentialEdit.ExceptionMessage = "Fields invalids : " + string.Join(", ", 
+                    ModelState.Where(p => p.Value?.ValidationState == ModelValidationState.Invalid)
+                    .Select(p => p.Key.Split(".")[1]).ToList());
             return Page();
         }
 

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using tinyidp.Pages.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace tinyidp.Pages.Credentials;
 
@@ -42,6 +43,10 @@ public class CreateModel : PageModel
     {
         if (!ModelState.IsValid)
         {
+            if (_credentialCreate != null)
+                _credentialCreate.ExceptionMessage = "Fields invalids : " + string.Join(", ", 
+                    ModelState.Where(p => p.Value?.ValidationState == ModelValidationState.Invalid)
+                    .Select(p => p.Key.Split(".")[1]).ToList());
             return Page();
         }
 
