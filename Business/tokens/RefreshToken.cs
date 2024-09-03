@@ -39,13 +39,8 @@ public class RefreshToken : ITokenStrategy
         _encryptionService = encryptionService;
     }
 
-    public async Task<TokenResponseBusiness> GetTokenByType(HttpContext httpContext, TokenRequestBusiness request, CredentialBusinessEntity client)
+    public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, CredentialBusinessEntity client)
     {
-        if (!await VerifyClientHeader(httpContext, request, client))
-        {
-            throw new TinyidpTokenException("Invalid credentials", "unauthorized_client");            
-        }
-
         if (client.CreationDateRefreshToken == null)
         {
             throw new TinyidpTokenException("Token and creation date are inconsistent", "invalid_token");            
@@ -68,8 +63,8 @@ public class RefreshToken : ITokenStrategy
         }
 
         TokenResponseBusiness resp = new TokenResponseBusiness();
-        resp.access_token = await Task.Run( () => _keysManagment.GenerateJWTToken(
-            refreshTokenResponse.Algo, refreshTokenResponse.Scopes, refreshTokenResponse.Audiences, refreshTokenResponse.Ident, refreshTokenResponse.LifeTime));
+        resp.access_token = _keysManagment.GenerateJWTToken(
+            refreshTokenResponse.Algo, refreshTokenResponse.Scopes, refreshTokenResponse.Audiences, refreshTokenResponse.Ident, refreshTokenResponse.LifeTime);
 
         resp.token_type = "Bearer";
 
@@ -78,10 +73,8 @@ public class RefreshToken : ITokenStrategy
         return resp;
     }
 
-    public async Task<bool> VerifyClientHeader(HttpContext httpContext, TokenRequestBusiness request, CredentialBusinessEntity client)
+    public async Task<bool> VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, CredentialBusinessEntity client)
     {
-        BasicIdent ident = httpContext.GetBasicIdent();
-
         if (ident.ClientId != client.Ident)
             throw new TinyidpTokenException("Client corresponding of the refresh_token is not the same than Authorization header", "invalid_request");
         

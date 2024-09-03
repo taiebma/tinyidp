@@ -34,13 +34,8 @@ public class TokenClientCredential : ITokenStrategy
         _keysManagment = keysManagment;
     }
 
-    public async Task<TokenResponseBusiness> GetTokenByType(HttpContext httpContext, TokenRequestBusiness request, CredentialBusinessEntity client)
+    public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, CredentialBusinessEntity client)
     {
-        if (!await VerifyClientHeader(httpContext, request, client))
-        {
-            throw new TinyidpTokenException("Invalid credentials", "unauthorized_client");            
-        }
-
         IEnumerable<string> scopes = new List<string>();
         if (client.AllowedScopes != null)
         {
@@ -70,12 +65,10 @@ public class TokenClientCredential : ITokenStrategy
         return resp;
     }
 
-    public async Task<bool> VerifyClientHeader(HttpContext httpContext, TokenRequestBusiness request, CredentialBusinessEntity client)
+    public async Task<bool> VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, CredentialBusinessEntity client)
     {
         if (client.RoleIdent != RoleCredential.Client)
             throw new TinyidpTokenException("Only client role can use client_credential", "unsupported_grant_type");
-
-        BasicIdent ident = httpContext.GetBasicIdent();
 
         if (ident.ClientId != request.client_id)
             throw new TinyidpTokenException("Client_id of the request is not the same than Authorization header", "invalid_request");
@@ -85,5 +78,5 @@ public class TokenClientCredential : ITokenStrategy
         
         return await _credentialBusiness.VerifyPassword(ident.ClientId, ident.ClientSecret);
     }
-    
+
 }

@@ -37,7 +37,7 @@ public class TokenAuthorizationCode : ITokenStrategy
         _pkceService = pkceService;
     }
 
-    public async Task<TokenResponseBusiness> GetTokenByType(HttpContext httpContext, TokenRequestBusiness request, CredentialBusinessEntity client)
+    public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, CredentialBusinessEntity client)
     {
         IEnumerable<string> scopes = new List<string>();
         if (client.AllowedScopes != null)
@@ -69,7 +69,7 @@ public class TokenAuthorizationCode : ITokenStrategy
         if (String.IsNullOrEmpty(request.code))
             throw new TinyidpTokenException("No authorization code", "invalid_request");
 
-        CredentialBusinessEntity? user = await _credentialBusiness.GetByAuthorizationCode(request.code);
+        CredentialBusinessEntity? user = _credentialBusiness.GetByAuthorizationCode(request.code).Result;
         if (user == null)
         {
             throw new TinyidpTokenException("Authorization code not found");
@@ -99,12 +99,10 @@ public class TokenAuthorizationCode : ITokenStrategy
         return resp;
     }
 
-    public async Task<bool> VerifyClientHeader(HttpContext httpContext, TokenRequestBusiness request, CredentialBusinessEntity client)
+    public async Task<bool> VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, CredentialBusinessEntity client)
     {
         if (client.RoleIdent != RoleCredential.Client)
             throw new TinyidpTokenException("Only client role can use client_credential", "unsupported_grant_type");
-
-        BasicIdent ident = httpContext.GetBasicIdent();
 
         if (ident.ClientId != request.client_id)
             throw new TinyidpTokenException("Client_id of the request is not the same than Authorization header", "invalid_request");

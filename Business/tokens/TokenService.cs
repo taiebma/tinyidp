@@ -6,6 +6,8 @@ using tinyidp.Business.BusinessEntities;
 using tinyidp.Encryption;
 using tinyidp.Exceptions;
 using tinyidp.infrastructure.bdd;
+using tinyidp.Extensions;
+using System.Security.Cryptography.X509Certificates;
 
 namespace tinyidp.Business.tokens;
 
@@ -36,48 +38,55 @@ public class TokenService : ITokenService
 
     public async Task<TokenResponseBusiness> GetToken(HttpContext? httpContext, TokenRequestBusiness request)
     {
-        CredentialBusinessEntity? client;
+        CredentialBusinessEntity? client = null;
 
         if (httpContext == null)
         {
             throw new TinyidpTokenException("No HTTP Context");
         }
-        if (request.grant_type == "refresh_token")
+/*
+        X509Certificate2? clientCert = httpContext.Connection.ClientCertificate;
+        if (clientCert != null && clientCert.Verify())
         {
-            if (!String.IsNullOrEmpty(request.refresh_token))
-                client = await _credentialBusiness.GetByRefreshToken(request.refresh_token);
-            else
-                throw new TinyidpTokenException("No refresh token", "invalid_request");
+            
         }
         else
         {
-            client = await _credentialBusiness.GetByIdent(request.client_id??String.Empty);
-        }
-        if (client == null)
-        {
-            throw new TinyidpTokenException("Client id unknown", "invalid_client");
-        }
+        */
+            BasicIdent ident = httpContext.GetBasicIdent();
+        //}
 
         ITokenStrategy? tokenStrategy = null;
         switch(request.grant_type)
         {
             case "client_credential":
+            case "pkce":
                 tokenStrategy = GetTokenStrategy(TokenTypeEnum.client_credential);
+                client = await _credentialBusiness.GetByIdent(request.client_id??String.Empty);
                 break;
             case "code":
             case "authorization_code":
                 tokenStrategy = GetTokenStrategy(TokenTypeEnum.code);
-                break;
-            case "pkce":
-                tokenStrategy = GetTokenStrategy(TokenTypeEnum.client_credential);
+                client = await _credentialBusiness.GetByIdent(request.client_id??String.Empty);
                 break;
             case "refresh_token":
                 tokenStrategy = GetTokenStrategy(TokenTypeEnum.refresh_token);
+                if (!String.IsNullOrEmpty(request.refresh_token))
+                    client = await _credentialBusiness.GetByRefreshToken(request.refresh_token);
+                else
+                    throw new TinyidpTokenException("No refresh token", "invalid_request");
                 break;
         }
         if (tokenStrategy == null)
             throw new TinyidpTokenException("grant_type is not implemented", "unsupported_grant_type");
-        TokenResponseBusiness resp = await tokenStrategy.GetTokenByType(httpContext, request, client);
+
+        if (client == null)
+            throw new TinyidpTokenException("Client id unknown", "invalid_client");
+
+        if (!await tokenStrategy.VerifyClientIdent(ident, request, client))
+            throw new TinyidpTokenException("Client unauthorized", "unauthorized_client");
+
+        TokenResponseBusiness resp = tokenStrategy.GetTokenByType(request, client);
 
         resp.refresh_token = GenerateRefreshToken(resp.refreshTokenResponse);
 
