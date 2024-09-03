@@ -44,4 +44,6 @@ public partial class Credential
     public DateTime? CreationDateRefreshToken { get; set; }
 
     public int KeyType { get; set; }
+
+    public ICollection<Certificate> Certificates{ get; set; } = null!;
 }

@@ -1,3 +1,5 @@
+using tinyidp.infrastructure.bdd;
+
 namespace tinyidp.Business.BusinessEntities;
 
 public partial class CredentialBusinessEntity
@@ -42,6 +44,8 @@ public partial class CredentialBusinessEntity
     public DateTime? CreationDateRefreshToken { get; set; }
 
     public AlgoKeyType KeyType { get; set; } 
+
+    public ICollection<CertificateBusinessEntity>? CertificateBusinessEntities { get; set; } = null!;
 
     public CredentialBusinessEntity()
     {

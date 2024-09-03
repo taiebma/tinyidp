@@ -16,11 +16,13 @@ public class CredentialBusiness : ICredentialBusiness
 {
     private readonly ILogger<CredentialBusiness> _logger;
     private readonly ICredentialRepository _credentialRepository;
+    private readonly ICertificateRepository _certificateRepository;
 
-    public CredentialBusiness(ILogger<CredentialBusiness> logger, ICredentialRepository repo)
+    public CredentialBusiness(ILogger<CredentialBusiness> logger, ICredentialRepository repo, ICertificateRepository certificateRepository)
     {
         _logger = logger;
         _credentialRepository = repo;
+        _certificateRepository = certificateRepository;
     }
     public void AddNewCredential(CredentialBusinessEntity entity)
     {
@@ -66,15 +68,15 @@ public class CredentialBusiness : ICredentialBusiness
 
     public CredentialBusinessEntity Get(int id)
     {
-        var result =  _credentialRepository.GetById(id);
+        var result =  _credentialRepository.GetByIdReadOnly(id);
         if (result == null)
             throw new Exception("Credential not found");
         return result.ToBusiness();
     }
 
-    public CredentialBusinessEntity GetReadOnly(int id)
+    public CredentialBusinessEntity GetWithCertificates(int id)
     {
-        var result =  _credentialRepository.GetByIdReadOnly(id);
+        var result =  _credentialRepository.GetWithCertificates(id);
         if (result == null)
             throw new Exception("Credential not found");
         return result.ToBusiness();
@@ -250,4 +252,24 @@ public class CredentialBusiness : ICredentialBusiness
         return clientResp;
     }
 
+    public void AddNewCertificate(CertificateBusinessEntity entity)
+    {
+        entity.CreationDate = DateTime.Now;
+        _certificateRepository.Add(entity.ToEntity());
+    }
+
+    public async Task<CertificateBusinessEntity?> GetCertificate(int id)
+    {
+        var certif = await _certificateRepository.Get(id);
+        return certif?.ToBusiness();
+    }
+
+    public void UpdateCertificate(CertificateBusinessEntity entity)
+    {
+        _certificateRepository.Update(entity.ToEntity());
+    }
+    public void RemoveCertificate(CertificateBusinessEntity entity)
+    {
+        _certificateRepository.Remove(entity.ToEntity());
+    }
 }

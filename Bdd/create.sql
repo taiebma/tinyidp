@@ -23,26 +23,23 @@ CREATE TABLE public.credentials (
 );
 CREATE UNIQUE INDEX credentials_ident_idx ON public.credentials USING btree (ident);
 
-CREATE TABLE certificates (
-	id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+CREATE TABLE public.certificates (
+	id int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
 	dn varchar NOT NULL,
 	issuer varchar NOT NULL,
 	serial varchar NOT NULL,
-	state int NOT NULL,
+	state int4 NOT NULL,
 	creation_date timestamp NOT NULL,
 	last_ident timestamp NULL,
-	nbmaxrenew int NOT NULL,
-	tokenmaxminutevalidity bigint NOT NULL,
-	refreshmaxminutevalidity bigint NOT NULL,
-	audiences varchar,
-	allowed_scopes varchar,
-	authorization_code varchar,
-	redirect_uri varchar,
-	code_challenge varchar,
-	code_challenge_method varchar,
+	id_client int8 NOT NULL,
 	CONSTRAINT certificates_pk PRIMARY KEY (id)
 );
-CREATE UNIQUE INDEX certificates_ident_idx ON certificates USING btree (dn);
+CREATE UNIQUE INDEX certificates_ident_idx ON public.certificates USING btree (dn);
+
+
+-- public.certificates foreign keys
+
+ALTER TABLE public.certificates ADD CONSTRAINT certificates_credentials_fk FOREIGN KEY (id_client) REFERENCES public.credentials(id);
 
 CREATE TABLE kids (
     id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,

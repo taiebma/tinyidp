@@ -37,7 +37,7 @@ public class ChangePwdPage : PageModel
 
         if (int.TryParse(ident, out id))
         {
-             user = _credentialBusiness.GetReadOnly(id);
+             user = _credentialBusiness.Get(id);
 
         }
         else
@@ -61,7 +61,7 @@ public class ChangePwdPage : PageModel
     {
         if (ModelState.IsValid)
         {
-            var user = _credentialBusiness.GetReadOnly(_changePwdModel.Id);
+            var user = _credentialBusiness.Get(_changePwdModel.Id);
             if (!user.MustChangePwd)
             {
                 _changePwdModel.ExceptionMessage = "Error you don't have right for doing this";

@@ -9,6 +9,7 @@ public interface ICredentialRepository
     public Credential? GetById(int id);
     public Task<Credential?> GetByIdent(string ident);
     public Credential? GetByIdReadOnly(int id);
+    public Credential? GetWithCertificates(int id);
     public Task<Credential?> GetByIdentReadOnly(string ident);
     public Task<List<Credential>> SearchByIdentLike(string ident);
     public Task<Credential?> GetByAuthorizationCode(string code);

@@ -6,13 +6,22 @@
         "cyphertext",
         "decryptor",
         "encryptor",
+        "idcred",
         "incommon",
         "IPKCE",
         "keysmanagment",
+        "lastrenew",
+        "nbmaxrenew",
+        "nbnenew",
         "newkid",
+        "nextval",
         "PKCE",
+        "publickey",
+        "refreshmaxminutevalidity",
+        "refreshtoken",
         "rtoken",
         "SECU",
-        "Tinyidp"
+        "Tinyidp",
+        "tokenmaxminutevalidity"
     ]
 }

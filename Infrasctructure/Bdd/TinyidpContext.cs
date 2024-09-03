@@ -68,31 +68,11 @@ public partial class TinyidpContext : DbContext
             entity.Property(e => e.LastIdent)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("last_ident");
-            entity.Property(e => e.NbMaxRenew).HasColumnName("nbmaxrenew");
-            entity.Property(e => e.RefreshMaxMinuteValidity).HasColumnName("refreshmaxminutevalidity");
             entity.Property(e => e.Serial)
                 .HasColumnType("character varying")
                 .HasColumnName("serial");
             entity.Property(e => e.State).HasColumnName("state");
-            entity.Property(e => e.TokenMaxMinuteValidity).HasColumnName("tokenmaxminutevalidity");
-            entity.Property(e => e.Audiences)
-                .HasColumnType("character varying")
-                .HasColumnName("audiences");
-            entity.Property(e => e.AllowedScopes)
-                .HasColumnType("character varying")
-                .HasColumnName("allowed_scopes");
-            entity.Property(e => e.AuthorizationCode)
-                .HasColumnType("character varying")
-                .HasColumnName("authorization_code");
-            entity.Property(e => e.RedirectUri)
-                .HasColumnType("character varying")
-                .HasColumnName("redirect_uri");
-            entity.Property(e => e.CodeChallenge)
-                .HasColumnType("character varying")
-                .HasColumnName("code_challenge");
-            entity.Property(e => e.CodeChallengeMethod)
-                .HasColumnType("character varying")
-                .HasColumnName("code_challenge_method");
+            entity.Property(e => e.IdClient).HasColumnName("id_client");
         });
 
         modelBuilder.Entity<Credential>(entity =>
@@ -151,6 +131,10 @@ public partial class TinyidpContext : DbContext
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("creation_date_rtoken");
             entity.Property(e => e.KeyType).HasColumnName("key_type");
+            entity.HasMany(e => e.Certificates)
+                .WithOne(e => e.ClientCredential)
+                .HasForeignKey(e => e.IdClient)
+                .HasPrincipalKey(e => e.Id);
         });
 
         modelBuilder.Entity<Kid>(entity =>

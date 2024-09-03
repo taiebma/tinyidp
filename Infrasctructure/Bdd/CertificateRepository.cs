@@ -1,5 +1,7 @@
 
 
+using Microsoft.EntityFrameworkCore;
+
 namespace tinyidp.infrastructure.bdd;
 
 public class CertificateRepository : ICertificateRepository
@@ -27,5 +29,12 @@ public class CertificateRepository : ICertificateRepository
     {
         _tinyidpContext.Update(certificate);
         _tinyidpContext.SaveChanges();
+    }
+
+    public Task<Certificate?> Get(int id)
+    {
+        return _tinyidpContext.Certificates.Where(p => p.Id == id)
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
     }
 }

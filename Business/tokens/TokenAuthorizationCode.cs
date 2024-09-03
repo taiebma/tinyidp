@@ -39,11 +39,6 @@ public class TokenAuthorizationCode : ITokenStrategy
 
     public async Task<TokenResponseBusiness> GetTokenByType(HttpContext httpContext, TokenRequestBusiness request, CredentialBusinessEntity client)
     {
-        if (!await VerifyClientHeader(httpContext, request, client))
-        {
-            throw new TinyidpTokenException("Invalid credentials", "unauthorized_client");            
-        }
-
         IEnumerable<string> scopes = new List<string>();
         if (client.AllowedScopes != null)
         {
@@ -109,30 +104,15 @@ public class TokenAuthorizationCode : ITokenStrategy
         if (client.RoleIdent != RoleCredential.Client)
             throw new TinyidpTokenException("Only client role can use client_credential", "unsupported_grant_type");
 
-        var authHeader = httpContext.Request.Headers["Authorization"].ToString();
-        if (authHeader == null)
-            throw new TinyidpTokenException("No Authorization header", "invalid_request");
+        BasicIdent ident = httpContext.GetBasicIdent();
 
-        if (!authHeader.StartsWith("Basic", StringComparison.OrdinalIgnoreCase))
-            throw new TinyidpTokenException("For client_credential grant_type, Authorization must be Basic ", "invalid_request");
-
-        var parameters = authHeader.Substring("Basic ".Length);
-        var authorizationKeys = Encoding.UTF8.GetString(Convert.FromBase64String(parameters));
-
-        var authorizationResult = authorizationKeys.IndexOf(':');
-        if (authorizationResult == -1)
-            throw new TinyidpTokenException("Basic Authorization must be <client_id>:<client_secret> format", "invalid_request");
-
-        string clientId = authorizationKeys.Substring(0, authorizationResult);
-        string clientSecret = authorizationKeys.Substring(authorizationResult + 1);
-
-        if (clientId != request.client_id)
+        if (ident.ClientId != request.client_id)
             throw new TinyidpTokenException("Client_id of the request is not the same than Authorization header", "invalid_request");
         
-        if (clientSecret != Encoding.UTF8.GetString(Convert.FromBase64String(request.client_secret??String.Empty)))
+        if (ident.ClientSecret != Encoding.UTF8.GetString(Convert.FromBase64String(request.client_secret??String.Empty)))
             throw new TinyidpTokenException("client_secret of the request is not the same than Authorization header", "invalid_request");
         
-        return await _credentialBusiness.VerifyPassword(clientId, clientSecret);
+        return await _credentialBusiness.VerifyPassword(ident.ClientId, ident.ClientSecret);
     }
 
 }

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace tinyidp.infrastructure.bdd;
+namespace tinyidp.Business.BusinessEntities;
 
-public partial class Certificate
+public partial class CertificateBusinessEntity
 {
     public int Id { get; set; }
 
@@ -21,5 +21,5 @@ public partial class Certificate
 
     public int IdClient { get; set; }
 
-    public Credential ClientCredential { get; set; } = null!;
+    public CredentialBusinessEntity ClientCredential { get; set; } = null!;
 }

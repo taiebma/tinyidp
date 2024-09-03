@@ -52,6 +52,7 @@ builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
 // Repo
 builder.Services.AddScoped<ICredentialRepository, CredentialRepository>();
+builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
 builder.Services.AddScoped<IKidRepository, KidRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 

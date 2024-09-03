@@ -1,0 +1,107 @@
+@page 
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@model EditModel
+@{
+    ViewData["Title"] = "Certificate Managment";
+}
+<h1>@ViewData["Title"]</h1>
+<div id="error">
+    <span class="error">
+@if (Model._credentialEdit != null && Model._credentialEdit!.ExceptionMessage != null)
+{    
+    @Model._credentialEdit!.ExceptionMessage
+}
+    </span>
+</div>
+
+@if (Model._credentialEdit != null && Model._credentialEdit!.CanAccess)
+{
+<h3>Edit certificate</h3>
+<div id="add-block" class="shadowbox">
+<form method="post">
+    <input type="hidden" asp-for="_credentialEdit!.Id" class="form-control"/>
+    <input type="hidden" asp-for="_credentialEdit!.IdClient" class="form-control"/>
+    <input type="hidden" asp-for="_credentialEdit!.CreationDate" class="form-control"/>
+    <input type="hidden" asp-for="_credentialEdit!.LastIdent" class="form-control"/>
+    <table>
+    <tr>
+    <td>
+        <label for="Id">Id</label>
+    </td>
+    <td>
+        @Model._credentialEdit.Dn
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <label for="Ident">DN</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input asp-for="_credentialEdit!.Dn" class="form-control"/>
+        <span asp-validation-for="_credentialEdit!.Dn" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="Issuer">Issuer</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input asp-for="_credentialEdit!.Issuer" class="form-control"/>
+        <span asp-validation-for="_credentialEdit!.Issuer" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="Serial">Serial</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input asp-for="_credentialEdit!.Serial" class="form-control"/>
+        <span asp-validation-for="_credentialEdit!.Serial" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="State">State</label>
+    </td>
+    <td>
+        <div class="form-group"> 
+        <select asp-for="_credentialEdit!.State" asp-items="Html.GetEnumSelectList<StateCredential>()">
+            <option value="">Choose a State</option>
+        </select>
+        <span asp-validation-for="_credentialEdit!.State" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="CreationDate">Creation Date</label>
+    </td>
+    <td>
+        @Model._credentialEdit!.CreationDate
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="LastIdent">Last Ident</label>
+    </td>
+    <td>
+        @Model._credentialEdit!.LastIdent
+    </td>
+    </tr>
+    </table>
+        <input type="submit" value="Modify"/>
+</form>
+</div>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

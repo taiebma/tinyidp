@@ -30,7 +30,7 @@ public static class BusinessExtensions
             CodeChallengeMethod = entity.CodeChallengeMethod,
             RefreshToken = entity.RefreshToken,
             CreationDateRefreshToken = entity.CreationDateRefreshToken, 
-            KeyType = (int)entity.KeyType
+            KeyType = (int)entity.KeyType,
         };
     }
 
@@ -57,8 +57,36 @@ public static class BusinessExtensions
             CodeChallengeMethod = entity.CodeChallengeMethod,
             RefreshToken = entity.RefreshToken,
             CreationDateRefreshToken = entity.CreationDateRefreshToken, 
-            KeyType = (AlgoKeyType)Enum.Parse(typeof(AlgoKeyType), entity.KeyType.ToString())
-            
+            KeyType = (AlgoKeyType)Enum.Parse(typeof(AlgoKeyType), entity.KeyType.ToString()),
+            CertificateBusinessEntities = entity.Certificates?.Select(x => x.ToBusiness()).ToList()??new List<CertificateBusinessEntity>()
+        };
+    }
+
+    public static CertificateBusinessEntity ToBusiness(this Certificate certificate)
+    {
+        return new CertificateBusinessEntity() {
+            Id = certificate.Id, 
+            CreationDate = certificate.CreationDate, 
+            LastIdent = certificate.LastIdent, 
+            Dn = certificate.Dn, 
+            Issuer = certificate.Issuer, 
+            Serial = certificate.Serial, 
+            State = certificate.State, 
+            IdClient = certificate.IdClient
+        };
+    }
+
+    public static Certificate ToEntity(this CertificateBusinessEntity certificate)
+    {
+        return new Certificate() {
+            Id = certificate.Id, 
+            CreationDate = certificate.CreationDate, 
+            LastIdent = certificate.LastIdent, 
+            Dn = certificate.Dn, 
+            Issuer = certificate.Issuer, 
+            Serial = certificate.Serial, 
+            State = certificate.State, 
+            IdClient = certificate.IdClient
         };
     }
 

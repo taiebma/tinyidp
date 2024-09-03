@@ -86,7 +86,8 @@ public static class ModelsExtensions
             Audiences = string.Join(' ', entity.Audiences??new List<string>()),
             AuthorizationCode = entity.AuthorizationCode,
             RedirectUri = entity.RedirectUri, 
-            KeyType = entity.KeyType
+            KeyType = entity.KeyType,
+            Certificates = entity.CertificateBusinessEntities?.Select(x => x.ToModelEdit()).ToList()??new List<CertificateEditModel>()
         };
     }
 
@@ -220,6 +221,58 @@ public static class ModelsExtensions
             redirect_uri = tokenRequest.redirect_uri, 
             scope = tokenRequest.scope,
             refresh_token = tokenRequest.refresh_token
+        };
+    }
+
+    public static CertificateBusinessEntity ToBusiness(this CertificateCreateModel certificate)
+    {
+        return new CertificateBusinessEntity() {
+            CreationDate = certificate.CreationDate, 
+            Dn = certificate.Dn, 
+            Issuer = certificate.Issuer, 
+            Serial = certificate.Serial, 
+            State = (int)certificate.State, 
+            IdClient = certificate.IdClient
+        };
+    }
+
+    public static CertificateBusinessEntity ToBusiness(this CertificateEditModel certificate)
+    {
+        return new CertificateBusinessEntity() {
+            Id = certificate.Id, 
+            CreationDate = certificate.CreationDate, 
+            LastIdent = certificate.LastIdent, 
+            Dn = certificate.Dn, 
+            Issuer = certificate.Issuer, 
+            Serial = certificate.Serial, 
+            State = (int)certificate.State, 
+            IdClient = certificate.IdClient
+        };
+    }
+
+    public static CertificateCreateModel ToModelCreate(this CertificateBusinessEntity certificate)
+    {
+        return new CertificateCreateModel() {
+            CreationDate = certificate.CreationDate, 
+            Dn = certificate.Dn, 
+            Issuer = certificate.Issuer, 
+            Serial = certificate.Serial, 
+            State = Enum.Parse<StateCredential>(certificate.State.ToString()), 
+            IdClient = certificate.IdClient
+        };
+    }
+
+    public static CertificateEditModel ToModelEdit(this CertificateBusinessEntity certificate)
+    {
+        return new CertificateEditModel() {
+            Id = certificate.Id, 
+            CreationDate = certificate.CreationDate, 
+            LastIdent = certificate.LastIdent, 
+            Dn = certificate.Dn, 
+            Issuer = certificate.Issuer, 
+            Serial = certificate.Serial, 
+            State = Enum.Parse<StateCredential>(certificate.State.ToString()), 
+            IdClient = certificate.IdClient
         };
     }
 }

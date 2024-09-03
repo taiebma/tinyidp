@@ -1,0 +1,80 @@
+@page 
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@model CreateModel
+@{
+    ViewData["Title"] = "Certificate Managment";
+}
+<h1>@ViewData["Title"]</h1>
+<div id="error">
+    <span class="error">
+@if (Model._credentialCreate != null && Model._credentialCreate!.ExceptionMessage != null)
+{    
+    @Model._credentialCreate!.ExceptionMessage
+}
+    </span>
+</div>
+
+@if (Model._credentialCreate != null && Model._credentialCreate!.CanAccess)
+{
+<h3>Add certificate</h3>
+<div id="add-block" class="shadowbox">
+<form method="post">
+    <input type="hidden" asp-for="_credentialCreate!.IdClient" class="form-control"/>
+    <table>
+    <tr>
+    <td>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <label for="Ident">DN</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input asp-for="_credentialCreate!.Dn" class="form-control"/>
+        <span asp-validation-for="_credentialCreate!.Dn" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="Issuer">Issuer</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input asp-for="_credentialCreate!.Issuer" class="form-control"/>
+        <span asp-validation-for="_credentialCreate!.Issuer" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="Serial">Serial</label>
+    </td>
+    <td>
+        <div class="form-group">
+        <input asp-for="_credentialCreate!.Serial" class="form-control"/>
+        <span asp-validation-for="_credentialCreate!.Serial" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="State">State</label>
+    </td>
+    <td>
+        <div class="form-group"> 
+        <select asp-for="_credentialCreate!.State" asp-items="Html.GetEnumSelectList<StateCredential>()">
+            <option value="">Choose a State</option>
+        </select>
+        <span asp-validation-for="_credentialCreate!.State" class="text-danger"></span>
+        </div>
+    </td>
+    </tr>
+    </table>
+        <input type="submit" value="Create"/>
+</form>
+</div>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

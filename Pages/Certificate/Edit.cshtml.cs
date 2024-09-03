@@ -3,20 +3,22 @@ using tinyidp.Business.Credential;
 using tinyidp.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using tinyidp.Pages.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace tinyidp.Pages.Credentials;
+namespace tinyidp.Pages.Certificate;
 
 public class EditModel : PageModel
 {
-    private readonly ILogger<EditModel> _logger;
+    private readonly ILogger<CreateModel> _logger;
     private readonly ICredentialBusiness _credentialBusiness;
 
     [BindProperty]
-    public CredentialEditModel? _credentialEdit { get; set; }
+    public CertificateEditModel? _credentialEdit { get; set; }
 
-    public EditModel(ILogger<EditModel> logger, ICredentialBusiness credentialBusiness)
+
+    public EditModel(ILogger<CreateModel> logger, ICredentialBusiness credentialBusiness)
     {
         _credentialBusiness = credentialBusiness;
         _logger = logger;
@@ -24,9 +26,13 @@ public class EditModel : PageModel
 
     public void OnGet(int id)
     {
-        CredentialBusinessEntity result = _credentialBusiness.GetWithCertificates((int)id);
-        _credentialEdit = result.ToModelEdit();
         
+        _credentialEdit = _credentialBusiness.GetCertificate(id).Result?.ToModelEdit();
+        if (_credentialEdit == null)
+        {
+            _credentialEdit = new CertificateEditModel();
+            _credentialEdit.Id = id;
+        }
         if (User.Claims.Role() != RoleCredential.Admin)
         {
             _credentialEdit.ExceptionMessage = "You don't have rights to access";
@@ -36,6 +42,7 @@ public class EditModel : PageModel
         {
             _credentialEdit.CanAccess = true;
         }
+
     }
 
     public IActionResult OnPost()
@@ -52,9 +59,7 @@ public class EditModel : PageModel
         try
         {
             if (_credentialEdit != null)
-            {
-                _credentialBusiness.Update(_credentialEdit.ToBusiness());
-            }
+                _credentialBusiness.UpdateCertificate(_credentialEdit.ToBusiness());
         }
         catch (Exception ex)
         {
@@ -63,7 +68,7 @@ public class EditModel : PageModel
                 _credentialEdit.ExceptionMessage = String.Format("{0} - {1}", ex.Message, ex.InnerException?.Message);
             return Page();
         }
-        return RedirectToPage("./View");
+        return RedirectToPage("/Credentials/Edit", new { id = _credentialEdit?.IdClient });
     }
 }
 

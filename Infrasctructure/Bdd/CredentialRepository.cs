@@ -49,6 +49,15 @@ public class CredentialRepository : ICredentialRepository
             .FirstOrDefault();
     }
 
+    public Credential? GetWithCertificates(int id)
+    {
+        return _tinyidpContext.Credentials
+            .Where<Credential>(p => p.Id == id)
+            .AsNoTracking()
+            .Include(p => p.Certificates)
+            .FirstOrDefault();
+    }
+
     public Task<Credential?> GetByIdentReadOnly(string ident)
     {
         return _tinyidpContext.Credentials

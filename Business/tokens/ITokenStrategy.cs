@@ -7,4 +7,5 @@ public interface ITokenStrategy
 {
     static TokenTypeEnum Type {get;}
     Task<TokenResponseBusiness> GetTokenByType(HttpContext httpContext, TokenRequestBusiness request, CredentialBusinessEntity client);
+    public Task<bool> VerifyClientHeader(HttpContext httpContext, TokenRequestBusiness request, CredentialBusinessEntity client);
 }
