@@ -46,3 +46,22 @@ public class TinyidpCredentialException : Exception
         error_description = desc;
     }
 }
+
+public class TinyidpCertificateException : Exception
+{
+    public string error_description {get; } = "";
+
+    public TinyidpCertificateException(string message) : base(message)
+    {}
+    public TinyidpCertificateException(string message, string desc) : base(message)
+    { 
+        error_description = desc;
+    }
+
+    public TinyidpCertificateException(string message, Exception ex) : base(message, ex)
+    {}
+    public TinyidpCertificateException(string message, string desc, Exception ex) : base(message, ex)
+    {
+        error_description = desc;
+    }
+}

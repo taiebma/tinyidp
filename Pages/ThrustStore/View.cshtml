@@ -1,0 +1,70 @@
+@page 
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@model ThrustStoreViewPage
+@{
+    ViewData["Title"] = "Credentials Managment";
+}
+<h1>@ViewData["Title"]</h1>
+<div id="error">
+    <span class="error">
+@if (Model._thrustStoreCreateModel != null && Model._thrustStoreCreateModel!.ExceptionMessage != null)
+{    
+    @Model._thrustStoreCreateModel!.ExceptionMessage
+}
+    </span>
+</div>
+
+@if (Model._thrustStoreCreateModel != null && Model._thrustStoreCreateModel!.CanAccess)
+{
+
+<a asp-page="./Create" asp-route-id="">Add CA</a>
+
+<h3>List of CA Thrusted</h3>
+<div id="list" class="shadowlist">
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model._thrustStoreView[0].Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model._thrustStoreView[0].Dn)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model._thrustStoreView[0].Issuer)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model._thrustStoreView[0].ValidityDate)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model._thrustStoreView) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Dn)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Issuer)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ValidityDate)
+            </td>
+            <td>
+                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+</div>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

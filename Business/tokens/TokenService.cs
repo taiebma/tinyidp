@@ -19,6 +19,7 @@ public class TokenService : ITokenService
     private readonly IEncryptionService _encryptionService;
     private readonly ITokenRepository _tokenRepository;
     private readonly ICredentialBusiness _credentialBusiness;
+    private readonly IThrustStoreService _thrustStoreService;
 
     public TokenService(
             IConfiguration conf, 
@@ -26,7 +27,8 @@ public class TokenService : ITokenService
             IServiceProvider serviceProvider,
             IEncryptionService encryptionService,
             ITokenRepository tokenRepository,
-            ICredentialBusiness credentialBusiness)
+            ICredentialBusiness credentialBusiness,
+            IThrustStoreService thrustStoreService)
     {
         _conf = conf;
         _logger = logger;
@@ -34,6 +36,7 @@ public class TokenService : ITokenService
         _credentialBusiness = credentialBusiness;
         _encryptionService = encryptionService;
         _serviceProvider = serviceProvider;
+        _thrustStoreService = thrustStoreService;
     }
 
     public async Task<TokenResponseBusiness> GetToken(HttpContext? httpContext, TokenRequestBusiness request)
@@ -44,17 +47,24 @@ public class TokenService : ITokenService
         {
             throw new TinyidpTokenException("No HTTP Context");
         }
-/*
+
+        BasicIdent ident;
         X509Certificate2? clientCert = httpContext.Connection.ClientCertificate;
-        if (clientCert != null && clientCert.Verify())
+        if (clientCert != null && await _thrustStoreService.VerifyWithChain(clientCert))
         {
-            
+            client = await _credentialBusiness.GetCredentialByCertificate(clientCert.SerialNumber, clientCert.Issuer);
+            if (client == null)
+                throw new TinyidpTokenException("Unknown certificate", "invalid_client");
+
+            ident = new BasicIdent {
+                ClientId = client.Ident,
+                ClientSecret = ""
+            };
         }
         else
         {
-        */
-            BasicIdent ident = httpContext.GetBasicIdent();
-        //}
+            ident = httpContext.GetBasicIdent();
+        }
 
         ITokenStrategy? tokenStrategy = null;
         switch(request.grant_type)
@@ -62,17 +72,22 @@ public class TokenService : ITokenService
             case "client_credential":
             case "pkce":
                 tokenStrategy = GetTokenStrategy(TokenTypeEnum.client_credential);
-                client = await _credentialBusiness.GetByIdent(request.client_id??String.Empty);
+                if (client == null)
+                    client = await _credentialBusiness.GetByIdent(request.client_id??String.Empty);
                 break;
             case "code":
             case "authorization_code":
                 tokenStrategy = GetTokenStrategy(TokenTypeEnum.code);
-                client = await _credentialBusiness.GetByIdent(request.client_id??String.Empty);
+                if (client == null)
+                    client = await _credentialBusiness.GetByIdent(request.client_id??String.Empty);
                 break;
             case "refresh_token":
                 tokenStrategy = GetTokenStrategy(TokenTypeEnum.refresh_token);
                 if (!String.IsNullOrEmpty(request.refresh_token))
+                {
+                    // We fetch the client anyway to be sure to find the refresh_token (single use of refresh token)
                     client = await _credentialBusiness.GetByRefreshToken(request.refresh_token);
+                }
                 else
                     throw new TinyidpTokenException("No refresh token", "invalid_request");
                 break;

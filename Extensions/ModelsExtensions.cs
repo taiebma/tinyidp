@@ -275,4 +275,32 @@ public static class ModelsExtensions
             IdClient = certificate.IdClient
         };
     }
+
+    public static ThrustStoreViewModel ToModelView( this ThrustStoreBusiness thrustStore)
+    {
+        return new ThrustStoreViewModel() {
+            Id = thrustStore.Id, 
+            Dn = thrustStore.Dn, 
+            Issuer = thrustStore.Issuer, 
+            ValidityDate = thrustStore.ValidityDate
+        };
+    }
+    public static ThrustStoreEditModel ToModelEdit( this ThrustStoreBusiness thrustStore)
+    {
+        return new ThrustStoreEditModel() {
+            Id = thrustStore.Id, 
+            Dn = thrustStore.Dn, 
+            Issuer = thrustStore.Issuer, 
+            ValidityDate = thrustStore.ValidityDate
+        };
+    }
+    public static ThrustStoreBusiness ToBusiness( this ThrustStoreEditModel thrustStore)
+    {
+        return new ThrustStoreBusiness() {
+            Id = thrustStore.Id, 
+            Dn = thrustStore.Dn, 
+            Issuer = thrustStore.Issuer, 
+            ValidityDate = thrustStore.ValidityDate
+        };
+    }
 }

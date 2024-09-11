@@ -272,4 +272,11 @@ public class CredentialBusiness : ICredentialBusiness
     {
         _certificateRepository.Remove(entity.ToEntity());
     }
+
+    public async Task<CredentialBusinessEntity?> GetCredentialByCertificate(string serial, string issuer)
+    {
+        var cred = await _credentialRepository.GetCredentialByCertificate(serial, issuer);
+        return cred?.ToBusiness();
+    }
+
 }

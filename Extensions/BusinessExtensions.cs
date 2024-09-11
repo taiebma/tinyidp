@@ -159,4 +159,26 @@ public static class BusinessExtensions
         }
         return AlgoType.RSA;
     }
+
+    public static ThrustStoreBusiness ToBusiness(this ThrustStore store)
+    {
+        return new ThrustStoreBusiness() {
+            Id = store.Id, 
+            Dn = store.Dn, 
+            Issuer = store.Issuer, 
+            ValidityDate = store.ValidityDate, 
+            Certificate = store.Certificate
+        };
+    }
+
+    public static ThrustStore ToEntity(this ThrustStoreBusiness store)
+    {
+        return new ThrustStore() {
+            Id = store.Id, 
+            Dn = store.Dn, 
+            Issuer = store.Issuer, 
+            ValidityDate = store.ValidityDate, 
+            Certificate = store.Certificate
+        };
+    }
 }

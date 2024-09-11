@@ -1,0 +1,52 @@
+@page 
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@model CreateModel
+
+@{
+    ViewData["Title"] = "ThrustStore Managment";
+
+}
+@section Styles
+{
+    <link rel="stylesheet" href="~/dropzone/min/basic.min.css" />
+    <link rel="stylesheet" href="~/dropzone/min/dropzone.min.css" />
+}
+
+<h1>@ViewData["Title"]</h1>
+<div id="error">
+    <span class="error">
+@if (Model._thrustStoreCreate != null && Model._thrustStoreCreate!.ExceptionMessage != null)
+{    
+    @Model._thrustStoreCreate!.ExceptionMessage
+}
+    </span>
+</div>
+
+@if (Model._thrustStoreCreate != null && Model._thrustStoreCreate!.CanAccess)
+{
+<h3>Add certificate</h3>
+
+
+<div id="add-block" class="shadowbox">
+<form method="post" class="dropzone" id="dropzoneForm" enctype="multipart/form-data">
+<div class="fallback">
+    <input type="file" name="files" multiple />Select file or DragDrop it
+    <input type="submit" value="Add"/>
+</div>
+</form>
+</div>
+}
+
+@section Scripts {
+    <script src="~/dropzone/min/dropzone.min.js"></script>
+    <script>
+        Dropzone.options.dropzoneForm = {
+            addRemoveLinks: true,
+            paramName: "files" //default param name is "file", make it "files" so it matches our parameter name in the method
+        };
+    </script>    
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

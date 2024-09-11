@@ -102,6 +102,14 @@ public class CredentialRepository : ICredentialRepository
         return _tinyidpContext.Credentials.AsNoTracking().OrderBy(p => p.Id).ToListAsync();
     }
 
+    public Task<Credential?> GetCredentialByCertificate(string serial, string issuer)
+    {
+        return _tinyidpContext.Credentials.Where(
+            p => p.Certificates.Any(c => c.Issuer == issuer && c.Serial == serial))
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
+    }
+
     public void SaveChanges()
     {
         _tinyidpContext.SaveChanges();

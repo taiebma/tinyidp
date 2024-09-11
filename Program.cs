@@ -6,6 +6,9 @@ using tinyidp.infrastructure.keysmanagment;
 using tinyidp.WebAuthent.Modules;
 using tinyidp.Extensions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
+using tinyidp.Business.Certificate;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +40,7 @@ builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AuthorizeFolder("/Credentials");
     options.Conventions.AuthorizeFolder("/Certificates");
+    options.Conventions.AuthorizeFolder("/ThrustStore");
     options.Conventions.AuthorizeFolder("/Kids");
     options.Conventions.AuthorizeFolder("/Token");
     options.Conventions.AllowAnonymousToFolder("/Login");
@@ -58,6 +62,7 @@ builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 
 //Business
 builder.Services.AddScoped<ICredentialBusiness, CredentialBusiness>();
+builder.Services.AddScoped<IThrustStoreService, ThrustStoreService>();
 
 // Secu
 builder.Services.AddSingleton<IEncryptionService, RandomIvEncryptionService>();
@@ -69,6 +74,17 @@ builder.Services.AddTokenStrategies();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie();
+
+//  Config kestrel
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.ConfigureHttpsDefaults(options =>
+    {
+        options.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
+        options.AllowAnyClientCertificate();
+    });
+
+});
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())

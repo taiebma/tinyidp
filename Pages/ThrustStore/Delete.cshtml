@@ -1,0 +1,50 @@
+@page 
+@using tinyidp.Pages.Models
+@model DeleteThrustStoreModel
+@{
+    ViewData["Title"] = "ThrustStore Managment";
+}
+<h1>@ViewData["Title"]</h1>
+<div id="error">
+    <span class="error">
+@if (Model._thrustStoreEdit != null && Model._thrustStoreEdit!.ExceptionMessage != null)
+{    
+    @Model._thrustStoreEdit!.ExceptionMessage
+}
+    </span>
+</div>
+
+@if (Model._thrustStoreEdit != null && Model._thrustStoreEdit!.CanAccess)
+{
+<h3>Delete CA</h3>
+<div id="add-block" class="shadowbox">
+<form method="post">
+    <table>
+    <tr>
+    <td>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <label for="Id">Id</label>
+    </td>
+    <td>
+        @Html.DisplayFor(model => model._thrustStoreEdit!.Id)
+        <input type="hidden" asp-for="_thrustStoreEdit!.Id" class="form-control"/>
+    </td>
+    </tr>
+    <tr>
+    <td>
+        <label for="Dn">Dn</label>
+    </td>
+    <td>
+        @Html.DisplayFor(model => model._thrustStoreEdit!.Dn)
+    </td>
+    </tr>
+    <tr>
+    <td colspan="2">
+            <input type="submit" value="Delete"/>
+    </td>
+    </tr>
+    </table>
+</form>
+</div>
+
+}

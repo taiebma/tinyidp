@@ -23,5 +23,6 @@ public interface ICredentialBusiness
     public Task<CertificateBusinessEntity?> GetCertificate(int id);
     public void UpdateCertificate(CertificateBusinessEntity entity);
     public void RemoveCertificate(CertificateBusinessEntity entity);
+    public Task<CredentialBusinessEntity?> GetCredentialByCertificate(string serial, string issuer);
     
 }

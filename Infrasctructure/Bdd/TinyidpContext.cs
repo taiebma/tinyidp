@@ -22,6 +22,8 @@ public partial class TinyidpContext : DbContext
 
     public virtual DbSet<Token> Tokens { get; set; }
 
+    public virtual DbSet<ThrustStore> ThrustStore { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
@@ -43,6 +45,32 @@ public partial class TinyidpContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ThrustStore>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("thrust_store_pk");
+
+            entity.ToTable("thrust_store");
+
+            entity.HasIndex(e => new {e.Dn, e.Issuer, e.ValidityDate}, "thrust_store_idx").IsUnique();
+
+            entity.Property(e => e.Id)
+//                .ValueGeneratedNever()
+                .HasColumnName("id")
+                .UseIdentityAlwaysColumn();
+            entity.Property(e => e.ValidityDate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("validity_date");
+            entity.Property(e => e.Dn)
+                .HasColumnType("character varying")
+                .HasColumnName("dn");
+            entity.Property(e => e.Issuer)
+                .HasColumnType("character varying")
+                .HasColumnName("issuer");
+            entity.Property(e => e.Certificate)
+                .HasColumnType("text")
+                .HasColumnName("certificate");
+        });
+
         modelBuilder.Entity<Certificate>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("certificates_pk");

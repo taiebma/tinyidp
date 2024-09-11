@@ -9,7 +9,7 @@ namespace tinyidp.Pages.Certificate;
 
 public class DeleteModel : PageModel
 {
-    private readonly ILogger<EditModel> _logger;
+    private readonly ILogger<DeleteModel> _logger;
     private readonly ICredentialBusiness _credentialBusiness;
 
     [BindProperty]
@@ -21,7 +21,7 @@ public class DeleteModel : PageModel
     [BindProperty(SupportsGet = true)]
     public int? SearchState { get; set; }
 
-    public DeleteModel(ILogger<EditModel> logger, ICredentialBusiness credentialBusiness)
+    public DeleteModel(ILogger<DeleteModel> logger, ICredentialBusiness credentialBusiness)
     {
         _credentialBusiness = credentialBusiness;
         _logger = logger;

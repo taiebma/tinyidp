@@ -18,7 +18,7 @@ public class RandomIvEncryptionService : IEncryptionService
         try
         {
             key = _conf.GetSection("TINYIDP_SECU")?.GetValue<string>("Key");
-            _logger.LogInformation("Key found : " + key);
+            _logger.LogInformation("Key found ");
         }
         catch 
         {

@@ -63,3 +63,14 @@ CREATE TABLE tokens (
 	CONSTRAINT tokens_pk PRIMARY KEY (id)
 );
 CREATE UNIQUE INDEX tokens_idx ON tokens USING btree (refreshtoken);
+
+CREATE TABLE public.thrust_store (
+	id int8 GENERATED ALWAYS AS IDENTITY NOT NULL,
+	dn varchar NOT NULL,
+	issuer varchar NOT NULL,
+	validity_date timestamp NOT NULL,
+	certificate text NOT NULL,
+	CONSTRAINT thrust_store_pk PRIMARY KEY (id)
+);
+CREATE UNIQUE INDEX thrust_store_id_idx ON public.thrust_store (id);
+CREATE INDEX thrust_store_dn_idx ON public.thrust_store (dn,issuer,validity_date);
