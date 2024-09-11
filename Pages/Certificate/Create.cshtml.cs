@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using tinyidp.Pages.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Security.Cryptography.X509Certificates;
 
 namespace tinyidp.Pages.Certificate;
 
@@ -40,8 +41,9 @@ public class CreateModel : PageModel
 
     }
 
-    public IActionResult OnPost()
+    public IActionResult OnPost(List<IFormFile> files)
     {
+/*        
         if (!ModelState.IsValid)
         {
             if (_credentialCreate != null)
@@ -50,9 +52,28 @@ public class CreateModel : PageModel
                     .Select(p => p.Key.Split(".")[1]).ToList());
             return Page();
         }
+*/
+        if (_credentialCreate == null)
+        {
+            return Page();
+        }
+        if (files.Count == 0)
+        {
+            _credentialCreate.ExceptionMessage = "No file selected";
+            return Page();
+        }
 
         try
         {
+            using MemoryStream memoryStream = new MemoryStream();
+            files.First().CopyToAsync(memoryStream);
+            X509Certificate2 cert = new X509Certificate2(memoryStream.ToArray());
+            _credentialCreate.Dn = cert.Subject;
+            DateTime.TryParse(cert.GetExpirationDateString(), out DateTime resultDateExp);
+            _credentialCreate.ValidityDate = resultDateExp;
+            _credentialCreate.Issuer = cert.Issuer;
+            _credentialCreate.Serial = cert.SerialNumber;
+
             if (_credentialCreate != null)
                 _credentialBusiness.AddNewCertificate(_credentialCreate.ToBusiness());
         }

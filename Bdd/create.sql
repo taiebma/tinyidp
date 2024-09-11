@@ -29,7 +29,7 @@ CREATE TABLE public.certificates (
 	issuer varchar NOT NULL,
 	serial varchar NOT NULL,
 	state int4 NOT NULL,
-	creation_date timestamp NOT NULL,
+	validity_date timestamp NOT NULL,
 	last_ident timestamp NULL,
 	id_client int8 NOT NULL,
 	CONSTRAINT certificates_pk PRIMARY KEY (id)

@@ -65,7 +65,7 @@ public class TokenClientCredential : ITokenStrategy
         return resp;
     }
 
-    public async Task<bool> VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, CredentialBusinessEntity client)
+    public async Task<bool> VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, CredentialBusinessEntity client, bool checkPwd)
     {
         if (client.RoleIdent != RoleCredential.Client)
             throw new TinyidpTokenException("Only client role can use client_credential", "unsupported_grant_type");
@@ -73,6 +73,9 @@ public class TokenClientCredential : ITokenStrategy
         if (ident.ClientId != request.client_id)
             throw new TinyidpTokenException("Client_id of the request is not the same than Authorization header", "invalid_request");
         
+        if (!checkPwd)
+            return true;
+            
         if (ident.ClientSecret != Encoding.UTF8.GetString(Convert.FromBase64String(request.client_secret??String.Empty)))
             throw new TinyidpTokenException("client_secret of the request is not the same than Authorization header", "invalid_request");
         

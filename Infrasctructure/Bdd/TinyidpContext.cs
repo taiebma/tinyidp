@@ -84,9 +84,9 @@ public partial class TinyidpContext : DbContext
                 .HasColumnName("id")
                 .UseIdentityAlwaysColumn();
                 //.HasDefaultValueSql("nextval('\"id_certificates\"')");
-            entity.Property(e => e.CreationDate)
+            entity.Property(e => e.ValidityDate)
                 .HasColumnType("timestamp without time zone")
-                .HasColumnName("creation_date");
+                .HasColumnName("validity_date");
             entity.Property(e => e.Dn)
                 .HasColumnType("character varying")
                 .HasColumnName("dn");

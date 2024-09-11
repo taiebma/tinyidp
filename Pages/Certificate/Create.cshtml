@@ -5,6 +5,12 @@
 @{
     ViewData["Title"] = "Certificate Managment";
 }
+@section Styles
+{
+    <link rel="stylesheet" href="~/dropzone/min/basic.min.css" />
+    <link rel="stylesheet" href="~/dropzone/min/dropzone.min.css" />
+}
+
 <h1>@ViewData["Title"]</h1>
 <div id="error">
     <span class="error">
@@ -19,62 +25,25 @@
 {
 <h3>Add certificate</h3>
 <div id="add-block" class="shadowbox">
-<form method="post">
+
+<form method="post" class="dropzone" id="dropzoneForm" enctype="multipart/form-data">
     <input type="hidden" asp-for="_credentialCreate!.IdClient" class="form-control"/>
-    <table>
-    <tr>
-    <td>
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <label for="Ident">DN</label>
-    </td>
-    <td>
-        <div class="form-group">
-        <input asp-for="_credentialCreate!.Dn" class="form-control"/>
-        <span asp-validation-for="_credentialCreate!.Dn" class="text-danger"></span>
-        </div>
-    </td>
-    </tr>
-    <tr>
-    <td>
-        <label for="Issuer">Issuer</label>
-    </td>
-    <td>
-        <div class="form-group">
-        <input asp-for="_credentialCreate!.Issuer" class="form-control"/>
-        <span asp-validation-for="_credentialCreate!.Issuer" class="text-danger"></span>
-        </div>
-    </td>
-    </tr>
-    <tr>
-    <td>
-        <label for="Serial">Serial</label>
-    </td>
-    <td>
-        <div class="form-group">
-        <input asp-for="_credentialCreate!.Serial" class="form-control"/>
-        <span asp-validation-for="_credentialCreate!.Serial" class="text-danger"></span>
-        </div>
-    </td>
-    </tr>
-    <tr>
-    <td>
-        <label for="State">State</label>
-    </td>
-    <td>
-        <div class="form-group"> 
-        <select asp-for="_credentialCreate!.State" asp-items="Html.GetEnumSelectList<StateCredential>()">
-            <option value="">Choose a State</option>
-        </select>
-        <span asp-validation-for="_credentialCreate!.State" class="text-danger"></span>
-        </div>
-    </td>
-    </tr>
-    </table>
-        <input type="submit" value="Create"/>
+
+<div class="fallback">
+    <input type="file" name="files" multiple />Select file or DragDrop it
+</div>
+<input type="submit" value="Add"/>
 </form>
 </div>
 }
 
 @section Scripts {
+    <script src="~/dropzone/min/dropzone.min.js"></script>
+    <script>
+        Dropzone.options.dropzoneForm = {
+            addRemoveLinks: true,
+            paramName: "files" //default param name is "file", make it "files" so it matches our parameter name in the method
+        };
+    </script>    
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

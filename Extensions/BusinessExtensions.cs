@@ -66,7 +66,7 @@ public static class BusinessExtensions
     {
         return new CertificateBusinessEntity() {
             Id = certificate.Id, 
-            CreationDate = certificate.CreationDate, 
+            ValidityDate = certificate.ValidityDate, 
             LastIdent = certificate.LastIdent, 
             Dn = certificate.Dn, 
             Issuer = certificate.Issuer, 
@@ -80,7 +80,7 @@ public static class BusinessExtensions
     {
         return new Certificate() {
             Id = certificate.Id, 
-            CreationDate = certificate.CreationDate, 
+            ValidityDate = certificate.ValidityDate, 
             LastIdent = certificate.LastIdent, 
             Dn = certificate.Dn, 
             Issuer = certificate.Issuer, 

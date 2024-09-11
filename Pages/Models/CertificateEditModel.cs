@@ -21,7 +21,7 @@ public partial class CertificateEditModel
     [Required]
     public StateCredential State { get; set; }
 
-    public DateTime CreationDate { get; set; }
+    public DateTime ValidityDate { get; set; }
 
     public DateTime? LastIdent { get; set; }
 

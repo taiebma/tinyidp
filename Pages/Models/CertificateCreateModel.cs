@@ -19,7 +19,7 @@ public partial class CertificateCreateModel
     [Required]
     public StateCredential State { get; set; }
 
-    public DateTime CreationDate { get; set; }
+    public DateTime ValidityDate { get; set; }
 
     [Required]
     public int IdClient { get; set; }

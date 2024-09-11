@@ -254,7 +254,7 @@ public class CredentialBusiness : ICredentialBusiness
 
     public void AddNewCertificate(CertificateBusinessEntity entity)
     {
-        entity.CreationDate = DateTime.Now;
+        entity.ValidityDate = DateTime.Now;
         _certificateRepository.Add(entity.ToEntity());
     }
 

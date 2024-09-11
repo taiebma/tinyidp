@@ -15,7 +15,7 @@ public partial class Certificate
 
     public int State { get; set; }
 
-    public DateTime CreationDate { get; set; }
+    public DateTime ValidityDate { get; set; }
 
     public DateTime? LastIdent { get; set; }
 

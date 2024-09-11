@@ -227,7 +227,7 @@ public static class ModelsExtensions
     public static CertificateBusinessEntity ToBusiness(this CertificateCreateModel certificate)
     {
         return new CertificateBusinessEntity() {
-            CreationDate = certificate.CreationDate, 
+            ValidityDate = certificate.ValidityDate, 
             Dn = certificate.Dn, 
             Issuer = certificate.Issuer, 
             Serial = certificate.Serial, 
@@ -240,7 +240,7 @@ public static class ModelsExtensions
     {
         return new CertificateBusinessEntity() {
             Id = certificate.Id, 
-            CreationDate = certificate.CreationDate, 
+            ValidityDate = certificate.ValidityDate, 
             LastIdent = certificate.LastIdent, 
             Dn = certificate.Dn, 
             Issuer = certificate.Issuer, 
@@ -253,7 +253,7 @@ public static class ModelsExtensions
     public static CertificateCreateModel ToModelCreate(this CertificateBusinessEntity certificate)
     {
         return new CertificateCreateModel() {
-            CreationDate = certificate.CreationDate, 
+            ValidityDate = certificate.ValidityDate, 
             Dn = certificate.Dn, 
             Issuer = certificate.Issuer, 
             Serial = certificate.Serial, 
@@ -266,7 +266,7 @@ public static class ModelsExtensions
     {
         return new CertificateEditModel() {
             Id = certificate.Id, 
-            CreationDate = certificate.CreationDate, 
+            ValidityDate = certificate.ValidityDate, 
             LastIdent = certificate.LastIdent, 
             Dn = certificate.Dn, 
             Issuer = certificate.Issuer, 

@@ -98,7 +98,7 @@ public class TokenService : ITokenService
         if (client == null)
             throw new TinyidpTokenException("Client id unknown", "invalid_client");
 
-        if (!await tokenStrategy.VerifyClientIdent(ident, request, client))
+        if (!await tokenStrategy.VerifyClientIdent(ident, request, client, (clientCert == null)))
             throw new TinyidpTokenException("Client unauthorized", "unauthorized_client");
 
         TokenResponseBusiness resp = tokenStrategy.GetTokenByType(request, client);

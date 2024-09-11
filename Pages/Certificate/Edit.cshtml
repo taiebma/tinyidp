@@ -22,7 +22,7 @@
 <form method="post">
     <input type="hidden" asp-for="_credentialEdit!.Id" class="form-control"/>
     <input type="hidden" asp-for="_credentialEdit!.IdClient" class="form-control"/>
-    <input type="hidden" asp-for="_credentialEdit!.CreationDate" class="form-control"/>
+    <input type="hidden" asp-for="_credentialEdit!.ValidityDate" class="form-control"/>
     <input type="hidden" asp-for="_credentialEdit!.LastIdent" class="form-control"/>
     <table>
     <tr>
@@ -85,7 +85,7 @@
         <label for="CreationDate">Creation Date</label>
     </td>
     <td>
-        @Model._credentialEdit!.CreationDate
+        @Model._credentialEdit!.ValidityDate
     </td>
     </tr>
     <tr>
