@@ -32,16 +32,23 @@ public class ThrustStoreService : IThrustStoreService
 
         using X509Chain chain = new X509Chain();
         chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-        foreach(ThrustStore ca in listThrustedCertificate)
-        {
-            X509Certificate2 x509 = X509Certificate2.CreateFromPem(ca.Certificate.AsSpan());
-            chain.ChainPolicy.ExtraStore.Add(x509);
-        }
         chain.Build(cert);
 
         if (chain.ChainStatus.Length > 0)
         {
-            throw new TinyidpCertificateException(chain.ChainStatus[0].StatusInformation);
+            // Try with custom store
+            chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+            foreach(ThrustStore ca in listThrustedCertificate)
+            {
+                X509Certificate2 x509 = X509Certificate2.CreateFromPem(ca.Certificate.AsSpan());
+                chain.ChainPolicy.CustomTrustStore.Add(x509);
+            }
+            chain.Build(cert);
+            
+            if (chain.ChainStatus.Length > 0)
+            {
+                throw new TinyidpCertificateException(chain.ChainStatus[0].StatusInformation);
+            }
         }
         return (chain.ChainStatus.Length == 0);
     }
