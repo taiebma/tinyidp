@@ -11,6 +11,7 @@ using tinyidp.Business.BusinessEntities;
 using tinyidp.Encryption;
 using tinyidp.infrastructure.bdd;
 using tinyidp.Exceptions;
+using System.Text.Json.Serialization;
 
 namespace tinyidp.infrastructure.keysmanagment;
 
@@ -194,6 +195,11 @@ public class KeysManagment : IKeysManagment
         {
             claims.Add(new Claim("sub", sub, ClaimValueTypes.String));
         }
+        
+        foreach(string aud in audience)
+        {
+            claims.Add(new Claim("aud", aud));
+        }
 
         RSACryptoServiceProvider provider1 = new RSACryptoServiceProvider();
 
@@ -220,7 +226,7 @@ public class KeysManagment : IKeysManagment
 
         var token1 = new JwtSecurityToken(
             issuer,
-            JsonSerializer.Serialize(audience), 
+            null, 
             claims, 
             notBefore: DateTime.UtcNow,
             expires: DateTime.UtcNow.AddMinutes(lifeTime), 
