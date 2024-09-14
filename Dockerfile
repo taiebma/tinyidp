@@ -18,7 +18,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     && dotnet publish tinyidp.csproj -f net8.0 -c Release -o /app -r $RID --self-contained false
 
 # final stage/image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine3.18-$TARGETARCH
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
 WORKDIR /app
 COPY --from=build /app .
 RUN mkdir certs param
