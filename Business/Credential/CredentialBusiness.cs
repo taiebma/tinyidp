@@ -102,6 +102,11 @@ public class CredentialBusiness : ICredentialBusiness
         {
             return false;
         }
+        return VerifyPassword(entity, pass);
+    }
+
+    private bool VerifyPassword(tinyidp.infrastructure.bdd.Credential entity, string pass)
+    {
         bool result;
         try
         {
@@ -154,7 +159,7 @@ public class CredentialBusiness : ICredentialBusiness
     private async Task<tinyidp.infrastructure.bdd.Credential?> IdentifyUserWithAuthorizeHeader(HttpContext httpContext)
     {
         var authHeader = httpContext.Request.Headers["Authorization"].ToString();
-        if (authHeader == null)
+        if (string.IsNullOrEmpty(authHeader))
             return null;
 
         if (!authHeader.StartsWith("Basic", StringComparison.OrdinalIgnoreCase))
@@ -170,20 +175,23 @@ public class CredentialBusiness : ICredentialBusiness
         string clientId = authorizationKeys.Substring(0, authorizationResult);
         string clientSecret = authorizationKeys.Substring(authorizationResult + 1);
 
-        if (!(await VerifyPassword(clientId, clientSecret)))
-            throw new TinyidpCredentialException("Invalid client id or client secret", "invalid_request");
-
         tinyidp.infrastructure.bdd.Credential? user = await _credentialRepository.GetByIdentReadOnly(clientId);
 
         if (user != null)
         {
             if (user.RoleIdent != (int)RoleCredential.User)
                 throw new TinyidpCredentialException("This type of user cannot obtain authorization code", "invalid_request");
-
-            UpdateLastUserConnection(user);
-
-            CreateIdentityCooky(user.ToBusiness(), httpContext);
         }
+        else
+        {
+                throw new TinyidpCredentialException("Invalid client id or client secret", "invalid_request");
+        }
+        if (!(await VerifyPassword(clientId, clientSecret)))
+            throw new TinyidpCredentialException("Invalid client id or client secret", "invalid_request");
+
+        UpdateLastUserConnection(user);
+
+        CreateIdentityCooky(user.ToBusiness(), httpContext);
 
         return user;
     }

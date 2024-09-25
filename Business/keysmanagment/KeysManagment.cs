@@ -142,12 +142,12 @@ public class KeysManagment : IKeysManagment
 
     public KidBusinessEntity? GetKeyByKid(string kid)
     {
-        return _listKeys?.Where(p => p.Kid1  == kid).First();
+        return _listKeys?.Where(p => p.Kid1  == kid).FirstOrDefault();
     }
 
     public KidBusinessEntity? GetKeyById(int id)
     {
-        return _listKeys?.Where(p => p.Id  == id).First();
+        return _listKeys?.Where(p => p.Id  == id).FirstOrDefault();
     }
 
     public KidBusinessEntity? LastActive(AlgoType algo)
@@ -183,7 +183,7 @@ public class KeysManagment : IKeysManagment
 
     public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime)
     {
-        string issuer = _conf.GetSection("TINYIDP_IDP").GetValue<string>("BASE_URL_IDP")??"https://localhost:7034/";
+        string issuer = _conf.GetSection("TINYIDP_IDP")?.GetValue<string>("BASE_URL_IDP")??"https://localhost:7034/";
         var claims = new List<Claim>
         {
             new Claim("scope", string.Join(' ', scopes))

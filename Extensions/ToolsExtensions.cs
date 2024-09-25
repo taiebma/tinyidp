@@ -74,11 +74,11 @@ public static class ToolsExtensions
     public static BasicIdent GetBasicIdent(this HttpContext httpContext)
     {
         var authHeader = httpContext.Request.Headers["Authorization"].ToString();
-        if (authHeader == null)
+        if (string.IsNullOrEmpty(authHeader))
             throw new TinyidpTokenException("No Authorization header", "invalid_request");
 
         if (!authHeader.StartsWith("Basic", StringComparison.OrdinalIgnoreCase))
-            throw new TinyidpTokenException("For client_credential grant_type, Authorization must be Basic ", "invalid_request");
+            throw new TinyidpTokenException("For client_credential grant_type, Authorization must be Basic", "invalid_request");
 
         var parameters = authHeader.Substring("Basic ".Length);
         var authorizationKeys = Encoding.UTF8.GetString(Convert.FromBase64String(parameters));

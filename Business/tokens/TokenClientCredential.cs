@@ -75,8 +75,17 @@ public class TokenClientCredential : ITokenStrategy
         
         if (!checkPwd)
             return true;
-            
-        if (ident.ClientSecret != Encoding.UTF8.GetString(Convert.FromBase64String(request.client_secret??String.Empty)))
+        
+        string secretConverted;
+        try
+        {
+            secretConverted = Encoding.UTF8.GetString(Convert.FromBase64String(request.client_secret??String.Empty));
+        }
+        catch (FormatException)
+        {
+            throw new TinyidpTokenException("Bad secret format", "invalid_request");
+        }
+        if (ident.ClientSecret != secretConverted)
             throw new TinyidpTokenException("client_secret of the request is not the same than Authorization header", "invalid_request");
         
         return await _credentialBusiness.VerifyPassword(ident.ClientId, ident.ClientSecret);
