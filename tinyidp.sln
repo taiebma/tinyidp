@@ -1,25 +1,28 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.5.002.0
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tinyidp", "tinyidp.csproj", "{C581AFB0-643B-497B-BB63-C7A7AA101BB7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tinyidp", "tinyidp\tinyidp.csproj", "{CDB88EB0-AD3B-474F-881F-BFFE18008BC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tinyidp.tests", "tinyidp.tests\tinyidp.tests.csproj", "{03E805F0-FBFD-46F2-995B-3A3AE3F5DBB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C581AFB0-643B-497B-BB63-C7A7AA101BB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C581AFB0-643B-497B-BB63-C7A7AA101BB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C581AFB0-643B-497B-BB63-C7A7AA101BB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C581AFB0-643B-497B-BB63-C7A7AA101BB7}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {B7F918EC-6F5D-491D-ADB4-53A406B4ADE0}
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CDB88EB0-AD3B-474F-881F-BFFE18008BC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDB88EB0-AD3B-474F-881F-BFFE18008BC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDB88EB0-AD3B-474F-881F-BFFE18008BC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDB88EB0-AD3B-474F-881F-BFFE18008BC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03E805F0-FBFD-46F2-995B-3A3AE3F5DBB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03E805F0-FBFD-46F2-995B-3A3AE3F5DBB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03E805F0-FBFD-46F2-995B-3A3AE3F5DBB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03E805F0-FBFD-46F2-995B-3A3AE3F5DBB9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
