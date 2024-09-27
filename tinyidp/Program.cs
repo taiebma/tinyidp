@@ -68,6 +68,7 @@ builder.Services.AddScoped<IThrustStoreService, ThrustStoreService>();
 builder.Services.AddSingleton<IEncryptionService, RandomIvEncryptionService>();
 builder.Services.AddScoped<IKeysManagment, KeysManagment>();
 builder.Services.AddScoped<IPKCEService, PKCEService>();
+builder.Services.AddScoped<IHashedPasswordPbkbf2, HashedPasswordPbkbf2>();
 
 // Tokens
 builder.Services.AddTokenStrategies();

@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
+using tinyidp.Encryption;
 
 namespace tinyidp.Business.Credential;
 
@@ -17,16 +18,19 @@ public class CredentialBusiness : ICredentialBusiness
     private readonly ILogger<CredentialBusiness> _logger;
     private readonly ICredentialRepository _credentialRepository;
     private readonly ICertificateRepository _certificateRepository;
+    private readonly IHashedPasswordPbkbf2 _hashedPasswordPbkbf2;
 
-    public CredentialBusiness(ILogger<CredentialBusiness> logger, ICredentialRepository repo, ICertificateRepository certificateRepository)
+    public CredentialBusiness(ILogger<CredentialBusiness> logger, ICredentialRepository repo, ICertificateRepository certificateRepository, IHashedPasswordPbkbf2 hashedPasswordPbkbf2)
     {
         _logger = logger;
         _credentialRepository = repo;
         _certificateRepository = certificateRepository;
+        _hashedPasswordPbkbf2 = hashedPasswordPbkbf2;
     }
     public void AddNewCredential(CredentialBusinessEntity entity)
     {
-        entity.Pass = BCrypt.Net.BCrypt.EnhancedHashPassword(entity.Pass, 13);
+//        entity.Pass = BCrypt.Net.BCrypt.EnhancedHashPassword(entity.Pass, 13);
+        entity.Pass = _hashedPasswordPbkbf2.GetHashedPasswordPbkbf2(entity.Pass);
         _credentialRepository.Add(entity.ToEntity());
     }
 
@@ -85,7 +89,8 @@ public class CredentialBusiness : ICredentialBusiness
     public void Update(CredentialBusinessEntity entity)
     {
         if (!entity.PassNew.Equals(entity.Pass))
-            entity.Pass = BCrypt.Net.BCrypt.EnhancedHashPassword(entity.PassNew, 13);
+            entity.Pass = _hashedPasswordPbkbf2.GetHashedPasswordPbkbf2(entity.PassNew);
+//            entity.Pass = BCrypt.Net.BCrypt.EnhancedHashPassword(entity.PassNew, 13);
         _credentialRepository.Update(entity.ToEntity());
         _credentialRepository.SaveChanges();
    }
@@ -110,7 +115,8 @@ public class CredentialBusiness : ICredentialBusiness
         bool result;
         try
         {
-            result = BCrypt.Net.BCrypt.EnhancedVerify(pass, entity.Pass);
+//            result = BCrypt.Net.BCrypt.EnhancedVerify(pass, entity.Pass);
+            result = _hashedPasswordPbkbf2.VerifyHashedPasswordPbkbf2(entity.Pass, pass);
         }
         catch (Exception ex)
         {
