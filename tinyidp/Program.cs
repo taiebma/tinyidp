@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using tinyidp.Business.Certificate;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +64,7 @@ builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 //Business
 builder.Services.AddScoped<ICredentialBusiness, CredentialBusiness>();
 builder.Services.AddScoped<IThrustStoreService, ThrustStoreService>();
+builder.Services.AddSingleton<IMemoryCache, MemoryCache>();
 
 // Secu
 builder.Services.AddSingleton<IEncryptionService, RandomIvEncryptionService>();

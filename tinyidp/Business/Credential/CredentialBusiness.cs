@@ -125,6 +125,21 @@ public class CredentialBusiness : ICredentialBusiness
         return result;
     }
 
+    public bool CheckPassword(string entityPass, string pass)
+    {
+        bool result;
+        try
+        {
+//            result = BCrypt.Net.BCrypt.EnhancedVerify(pass, entity.Pass);
+            result = _hashedPasswordPbkbf2.VerifyHashedPasswordPbkbf2(entityPass, pass);
+        }
+        catch (Exception ex)
+        {
+            throw new TinyidpCredentialException("Error when verify password", ex);
+        }
+        return result;
+    }
+
     public async Task<CredentialBusinessEntity> Authorize(HttpContext? httpContext, AuthorizationRequest request)
     {
         tinyidp.infrastructure.bdd.Credential? client;
@@ -192,7 +207,7 @@ public class CredentialBusiness : ICredentialBusiness
         {
                 throw new TinyidpCredentialException("Invalid client id or client secret", "invalid_request");
         }
-        if (!(await VerifyPassword(clientId, clientSecret)))
+        if (!CheckPassword(user.Pass, clientSecret))
             throw new TinyidpCredentialException("Invalid client id or client secret", "invalid_request");
 
         UpdateLastUserConnection(user);

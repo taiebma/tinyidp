@@ -16,6 +16,7 @@ public interface ICredentialBusiness
     public Task<CredentialBusinessEntity?> GetByRefreshToken(string token);
     public CredentialBusinessEntity Get(int id);
     public Task<bool> VerifyPassword(string login, string pass);
+    public bool CheckPassword(string entityPass, string pass);
     public Task<CredentialBusinessEntity> Authorize(HttpContext? httpContext, AuthorizationRequest request);
     public void CreateIdentityCooky(CredentialBusinessEntity user, HttpContext httpContext);
     public void AddNewCertificate(CertificateBusinessEntity entity);

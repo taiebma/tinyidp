@@ -161,7 +161,7 @@ public class TokenServiceTest
         _contextMock.Setup(x => x.Connection).Returns(_connectionInfoMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
         _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>())).Returns(tokenResp);
-        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(Task.FromResult(true));
+        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(true);
         _serviceProviderMock.Setup(x => x.GetService(typeof(TokenAuthorizationCode))).Returns(_tokenStrategyMock.Object);
 
         _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<CredentialBusinessEntity?>(client));
@@ -192,7 +192,7 @@ public class TokenServiceTest
         _contextMock.Setup(x => x.Connection).Returns(_connectionInfoMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
         _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>())).Returns(tokenResp);
-        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(Task.FromResult(true));
+        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(true);
         _serviceProviderMock.Setup(x => x.GetRequiredKeyedService(It.IsAny<Type>(), It.IsAny<object?>())).Returns(_tokenStrategyMock.Object);
 
         _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<CredentialBusinessEntity?>(client));
@@ -225,7 +225,7 @@ public class TokenServiceTest
         _contextMock.Setup(x => x.Connection).Returns(_connectionInfoMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
         _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>())).Returns(tokenResp);
-        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(Task.FromResult(false));
+        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(false);
         _serviceProviderMock.Setup(x => x.GetRequiredKeyedService(It.IsAny<Type>(), It.IsAny<object?>())).Returns(_tokenStrategyMock.Object);
 
         _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<CredentialBusinessEntity?>(client));
@@ -258,7 +258,7 @@ public class TokenServiceTest
         _contextMock.Setup(x => x.Connection).Returns(_connectionInfoMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
         _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>())).Returns(tokenResp);
-        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(Task.FromResult(true));
+        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(true);
         _serviceProviderMock.Setup(x => x.GetRequiredKeyedService(It.IsAny<Type>(), It.IsAny<object?>())).Returns(_tokenStrategyMock.Object);
         _encryptionServiceMock.Setup(x => x.Encrypt(It.IsAny<string>())).Returns("lkjlkljkKLJLJ");
         

@@ -1,6 +1,7 @@
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -18,6 +19,7 @@ public class KeysManagmentTest
     private readonly Mock<ILogger<KeysManagment>> _loggerMock;
     private readonly Mock<IEncryptionService> _encryptionServiceMock;
     private readonly Mock<IKidRepository> _kidRepositoryMock;
+    private readonly IMemoryCache _memoryCache;
 
     private readonly KeysManagment _keysManagment;
 
@@ -32,6 +34,10 @@ public class KeysManagmentTest
         _loggerMock = new Mock<ILogger<KeysManagment>>();
         _encryptionServiceMock = new Mock<IEncryptionService>();
         _kidRepositoryMock = new Mock<IKidRepository>();
+        _memoryCache = new MemoryCache(
+            new MemoryCacheOptions
+            {
+            });
 
         _encryptionServiceMock.Setup(x => x.Decrypt(It.IsAny<string>())).Returns("-----BEGIN EC PRIVATE KEY-----MHcCAQEEIHhm2oIksyWWa5PViewkMcOKShR2b4SNNmy+vlgvla1hoAoGCCqGSM49AwEHoUQDQgAEntb5t/nxNKO1+AzL/kARU4Mw0cWvPcVFQ5BwuZf+ZmRLwwE88xOIJPY1IID3znqv8PB4Nu9FulmKEYl9rojFTw==-----END EC PRIVATE KEY-----");
         _kidRepositoryMock.Setup(x => x.GetAll()).Returns(Task.FromResult<List<Kid>>(kids));
@@ -39,7 +45,7 @@ public class KeysManagmentTest
         _kidRepositoryMock.Setup(x => x.Update(It.IsAny<Kid>()));
         _kidRepositoryMock.Setup(x => x.Remove(It.IsAny<Kid>()));
 
-        _keysManagment = new KeysManagment(_confMock.Object, _loggerMock.Object, _encryptionServiceMock.Object, _kidRepositoryMock.Object);
+        _keysManagment = new KeysManagment(_confMock.Object, _loggerMock.Object, _encryptionServiceMock.Object, _kidRepositoryMock.Object, _memoryCache);
     }
 
     [Fact]

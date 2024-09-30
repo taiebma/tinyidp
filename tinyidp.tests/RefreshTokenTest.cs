@@ -139,7 +139,7 @@ public class RefreshTokenTest
     }
 
     [Fact]
-    public async void VerifyClientIdent_ClientIdDifferent_ReturnException()
+    public void VerifyClientIdent_ClientIdDifferent_ReturnException()
     {
         BasicIdent ident = new BasicIdent {
             ClientId = "Test1", ClientSecret = "Test9"
@@ -152,15 +152,15 @@ public class RefreshTokenTest
         };
         bool checkedPwd = false;    
 
-        TinyidpTokenException ex = await Assert.ThrowsAsync<TinyidpTokenException>( 
-            async () => await _refreshToken.VerifyClientIdent(ident, request, client, checkedPwd));
+        TinyidpTokenException ex = Assert.Throws<TinyidpTokenException>( 
+            () => _refreshToken.VerifyClientIdent(ident, request, client, checkedPwd));
 
         Assert.Equal("Client corresponding of the refresh_token is not the same than Authorization header", ex.Message);
         Assert.Equal("invalid_request", ex.error_description);
     }
 
     [Fact]
-    public async void VerifyClientIdent_ChkPwdFalse_ReturnOk()
+    public void VerifyClientIdent_ChkPwdFalse_ReturnOk()
     {
         BasicIdent ident = new BasicIdent {
             ClientId = "Test9", ClientSecret = "Test9"
@@ -173,13 +173,13 @@ public class RefreshTokenTest
         };
         bool checkedPwd = false;    
 
-        bool res = await _refreshToken.VerifyClientIdent(ident, request, client, checkedPwd);
+        bool res = _refreshToken.VerifyClientIdent(ident, request, client, checkedPwd);
 
         Assert.True(res);
     }
 
     [Fact]
-    public async void VerifyClientIdent_ReturnOk()
+    public void VerifyClientIdent_ReturnOk()
     {
         BasicIdent ident = new BasicIdent {
             ClientId = "Test9", ClientSecret = "Test9"
@@ -191,9 +191,9 @@ public class RefreshTokenTest
              Id = 1, Ident = "Test9", RoleIdent = RoleCredential.Client
         };
         bool checkedPwd = true;
-        _credentialBusinessMock.Setup(x => x.VerifyPassword(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult<bool>(true));    
+        _credentialBusinessMock.Setup(x => x.CheckPassword(It.IsAny<string>(), It.IsAny<string>())).Returns(true);    
 
-        bool res = await _refreshToken.VerifyClientIdent(ident, request, client, checkedPwd);
+        bool res = _refreshToken.VerifyClientIdent(ident, request, client, checkedPwd);
 
         Assert.True(res);
     }

@@ -80,7 +80,7 @@ public class TokenClientCredentialTest
     }
 
     [Fact]
-    public async void VerifyClientIdent_RoleDifferent_ReturnException()
+    public void VerifyClientIdent_RoleDifferent_ReturnException()
     {
         BasicIdent ident = new BasicIdent {
             ClientId = "Test9", ClientSecret = "Test9"
@@ -93,15 +93,15 @@ public class TokenClientCredentialTest
         };
         bool checkedPwd = false;    
 
-        TinyidpTokenException ex = await Assert.ThrowsAsync<TinyidpTokenException>( 
-            async () => await _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd));
+        TinyidpTokenException ex = Assert.Throws<TinyidpTokenException>( 
+            () => _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd));
 
         Assert.Equal("Only client role can use client_credential", ex.Message);
         Assert.Equal("unsupported_grant_type", ex.error_description);
     }
 
     [Fact]
-    public async void VerifyClientIdent_ClientIdDifferent_ReturnException()
+    public void VerifyClientIdent_ClientIdDifferent_ReturnException()
     {
         BasicIdent ident = new BasicIdent {
             ClientId = "Test1", ClientSecret = "Test9"
@@ -114,15 +114,15 @@ public class TokenClientCredentialTest
         };
         bool checkedPwd = false;    
 
-        TinyidpTokenException ex = await Assert.ThrowsAsync<TinyidpTokenException>( 
-            async () => await _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd));
+        TinyidpTokenException ex = Assert.Throws<TinyidpTokenException>( 
+            () => _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd));
 
         Assert.Equal("Client_id of the request is not the same than Authorization header", ex.Message);
         Assert.Equal("invalid_request", ex.error_description);
     }
 
     [Fact]
-    public async void VerifyClientIdent_ChkPwdFalse_ReturnOk()
+    public void VerifyClientIdent_ChkPwdFalse_ReturnOk()
     {
         BasicIdent ident = new BasicIdent {
             ClientId = "Test9", ClientSecret = "Test9"
@@ -135,13 +135,13 @@ public class TokenClientCredentialTest
         };
         bool checkedPwd = false;    
 
-        bool res = await _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd);
+        bool res = _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd);
 
         Assert.True(res);
     }
 
     [Fact]
-    public async void VerifyClientIdent_BadFormatSecret_ReturnException()
+    public void VerifyClientIdent_BadFormatSecret_ReturnException()
     {
         BasicIdent ident = new BasicIdent {
             ClientId = "Test9", ClientSecret = "Test9"
@@ -154,15 +154,15 @@ public class TokenClientCredentialTest
         };
         bool checkedPwd = true;    
 
-        TinyidpTokenException ex = await Assert.ThrowsAsync<TinyidpTokenException>( 
-            async () => await _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd));
+        TinyidpTokenException ex = Assert.Throws<TinyidpTokenException>( 
+            () => _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd));
 
         Assert.Equal("Bad secret format", ex.Message);
         Assert.Equal("invalid_request", ex.error_description);
     }
 
     [Fact]
-    public async void VerifyClientIdent_ClientSecretDifferent_ReturnException()
+    public void VerifyClientIdent_ClientSecretDifferent_ReturnException()
     {
         BasicIdent ident = new BasicIdent {
             ClientId = "Test9", ClientSecret = "Test9"
@@ -175,15 +175,15 @@ public class TokenClientCredentialTest
         };
         bool checkedPwd = true;    
 
-        TinyidpTokenException ex = await Assert.ThrowsAsync<TinyidpTokenException>( 
-            async () => await _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd));
+        TinyidpTokenException ex = Assert.Throws<TinyidpTokenException>( 
+            () => _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd));
 
         Assert.Equal("client_secret of the request is not the same than Authorization header", ex.Message);
         Assert.Equal("invalid_request", ex.error_description);
     }
 
     [Fact]
-    public async void VerifyClientIdent_ReturnOk()
+    public void VerifyClientIdent_ReturnOk()
     {
         BasicIdent ident = new BasicIdent {
             ClientId = "Test9", ClientSecret = "Test9"
@@ -195,9 +195,9 @@ public class TokenClientCredentialTest
              Id = 1, Ident = "Test9", RoleIdent = RoleCredential.Client
         };
         bool checkedPwd = true;
-        _credentialBusinessMock.Setup(x => x.VerifyPassword(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult<bool>(true));    
+        _credentialBusinessMock.Setup(x => x.CheckPassword(It.IsAny<string>(), It.IsAny<string>())).Returns(true);    
 
-        bool res = await _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd);
+        bool res = _tokenClientCredential.VerifyClientIdent(ident, request, client, checkedPwd);
 
         Assert.True(res);
     }

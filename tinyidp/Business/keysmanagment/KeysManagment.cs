@@ -21,39 +21,48 @@ public class KeysManagment : IKeysManagment
     private readonly ILogger<KeysManagment> _logger;
     private readonly IEncryptionService _encryptionService;
     private readonly IKidRepository _kidRepository;
+    private readonly IMemoryCache _memoryCache;
     
-    private List<KidBusinessEntity> _listKeys;
+    private List<KidBusinessEntity>? _listKeys;
 
     public KeysManagment(
         IConfiguration conf, 
         ILogger<KeysManagment> logger, 
         IEncryptionService encryptionService,
-        IKidRepository repoKid)
+        IKidRepository repoKid,
+        IMemoryCache memCache)
     {
         _conf = conf;
         _logger = logger;
         _encryptionService = encryptionService;
         _kidRepository = repoKid;
+        _memoryCache = memCache;
+        _listKeys = new List<KidBusinessEntity>();
 
-        Task<List<Kid>> kids =  _kidRepository.GetAll();
-        if (kids.Result.Count == 0)
+        if (!_memoryCache.TryGetValue("keys", out _listKeys))
         {
-            _listKeys = new List<KidBusinessEntity>();
+            Task<List<Kid>> kids =  _kidRepository.GetAll();
+            if (kids.Result.Count == 0)
+            {
+                _listKeys = new List<KidBusinessEntity>();
+            }
+            else
+            {
+                _listKeys = kids.Result.Select(p => p.ToBusiness(_encryptionService)).ToList();
+            }
+            _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
         }
-        else
-        {
-            _listKeys = kids.Result.Select(p => p.ToBusiness(_encryptionService)).ToList();
-        }
+        
     }
 
     public List<KidBusinessEntity> GetKeys()
     {
-        return _listKeys;
+        return _listKeys??new List<KidBusinessEntity>();
     }
 
     public List<KidBusinessEntity> GetActiveKeys()
     {
-        return _listKeys.Where(p => p.State == KidState.Active && p.Valid == true).ToList();
+        return _listKeys?.Where(p => p.State == KidState.Active && p.Valid == true).ToList()??new List<KidBusinessEntity>();
     }
 
     public KidBusinessEntity GenNewKey(AlgoType algo, string kid)
@@ -101,7 +110,10 @@ public class KeysManagment : IKeysManagment
         }
         else
         {
+            newkid.Id = kidEntity.Id;
+            newkid.Valid = true;
             _listKeys.Add(newkid);
+            _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
         }
 
         return newkid;
@@ -134,7 +146,10 @@ public class KeysManagment : IKeysManagment
         }
         else
         {
+            newkid.Id = kidEntity.Id;
+            newkid.Valid = true;
             _listKeys.Add(newkid);
+            _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
         }
 
         return newkid;
@@ -170,6 +185,7 @@ public class KeysManagment : IKeysManagment
         KidBusinessEntity curKid = _listKeys.First(p => p.Id == kid.Id);
         curKid.State = kid.State;
         _kidRepository.Update(curKid.ToEntity(_encryptionService));
+        _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
     }
 
     public void Remove(KidBusinessEntity kid)
@@ -179,6 +195,8 @@ public class KeysManagment : IKeysManagment
             return;
         }
         _kidRepository.Remove(kid.ToEntity(_encryptionService));
+        _listKeys.Remove(_listKeys.Where(p => p.Id == kid.Id).First());
+        _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
     }
 
     public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime)

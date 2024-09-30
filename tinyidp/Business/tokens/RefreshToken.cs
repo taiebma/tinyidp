@@ -73,7 +73,7 @@ public class RefreshToken : ITokenStrategy
         return resp;
     }
 
-    public async Task<bool> VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, CredentialBusinessEntity client, bool checkPwd)
+    public bool VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, CredentialBusinessEntity client, bool checkPwd)
     {
         if (ident.ClientId != client.Ident)
             throw new TinyidpTokenException("Client corresponding of the refresh_token is not the same than Authorization header", "invalid_request");
@@ -81,6 +81,6 @@ public class RefreshToken : ITokenStrategy
         if (!checkPwd)
             return true;
                 
-        return await _credentialBusiness.VerifyPassword(ident.ClientId, ident.ClientSecret);
+        return _credentialBusiness.CheckPassword(client.Pass, ident.ClientSecret);
     }
 }

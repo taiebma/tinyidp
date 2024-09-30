@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using tinyidp.Business.BusinessEntities;
 using tinyidp.Business.Credential;
+using tinyidp.Encryption;
 using tinyidp.Exceptions;
 using tinyidp.infrastructure.bdd;
 
@@ -23,6 +24,7 @@ public class CredentialServiceTest
     private Mock<HttpContext> _contextMock;
     private Mock<HttpRequest> _requestMock;
     private Mock<IHeaderDictionary> _headerMock;
+    private IHashedPasswordPbkbf2 _hashedPassword;
 
     private Mock<CredentialBusiness> _credentialBusinessMock;
     private CredentialBusiness _credentialBusiness;
@@ -39,18 +41,21 @@ public class CredentialServiceTest
         _requestMock = new Mock<HttpRequest>();
         _headerMock = new Mock<IHeaderDictionary>();
         _credentialBusinessMock = new Mock<CredentialBusiness>();
+        _hashedPassword = new HashedPasswordPbkbf2();
 
         _credentialBusiness = new CredentialBusiness(
             _loggerMock.Object,
             _credentialRepositoryMock.Object,
-            _certificateRepositoryMock.Object);
+            _certificateRepositoryMock.Object,
+            _hashedPassword);
 
         Type type = typeof(CredentialBusiness);
         _credentialBusinessInstance = Activator.CreateInstance(
             type, 
             _loggerMock.Object,
             _credentialRepositoryMock.Object,
-            _certificateRepositoryMock.Object);
+            _certificateRepositoryMock.Object,
+            _hashedPassword);
         
         _methodIdentifyUserWithAuthorizeHeader = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
             .Where(x => x.Name == "IdentifyUserWithAuthorizeHeader" && x.IsPrivate)
@@ -64,7 +69,7 @@ public class CredentialServiceTest
         string password = "Test1Test1!";
         tinyidp.infrastructure.bdd.Credential ident = new Credential {
             Ident = login,
-            Pass = "$2a$13$notjtDd82e4wrzSSo/6CLeA0/pOuUb9kSRqLxiTC/I/b0JcbWZn0C", 
+            Pass = "AQAAAAEAAYagAAAAEHLSUMSArukchcL6jzL1iKx6sDvXpy2VvI2Q99s81hMh5g846furpiG19NkbhFBisw==", 
             Id = 1
         };
 
@@ -96,7 +101,7 @@ public class CredentialServiceTest
         string password = "Test1Test1";
         tinyidp.infrastructure.bdd.Credential ident = new Credential {
             Ident = login,
-            Pass = "$2a$13$notjtDd82e4wrzSSo/6CLeA0/pOuUb9kSRqLxiTC/I/b0JcbWZn0C", 
+            Pass = "AQAAAAEAAYagAAAAEHLSUMSArukchcL6jzL1iKx6sDvXpy2VvI2Q99s81hMh5g846furpiG19NkbhFBisw==", 
             Id = 1
         };
 
@@ -345,7 +350,7 @@ public class CredentialServiceTest
         string login = "Test9";
         tinyidp.infrastructure.bdd.Credential ident = new Credential {
             Ident = login,
-            Pass = "$2a$13$notjtDd82e4wrzSSo/6CLeA0/pOuUb9kSRqLxiTC/I/b0JcbWZn0C", 
+            Pass = "AQAAAAEAAYagAAAAEHLSUMSArukchcL6jzL1iKx6sDvXpy2VvI2Q99s81hMh5g846furpiG19NkbhFBisw==", 
             Id = 1
         };
 
@@ -372,7 +377,7 @@ public class CredentialServiceTest
         string login = "Test1";
         tinyidp.infrastructure.bdd.Credential ident = new Credential {
             Ident = login,
-            Pass = "$2a$13$notjtDd82e4wrzSSo/6CLeA0/pOuUb9kSRqLxiTC/I/b0JcbWZn0C", 
+            Pass = "AQAAAAEAAYagAAAAEHLSUMSArukchcL6jzL1iKx6sDvXpy2VvI2Q99s81hMh5g846furpiG19NkbhFBisw==", 
             Id = 1,
             RoleIdent = (int)RoleCredential.User
         };
@@ -409,7 +414,7 @@ public class CredentialServiceTest
         string login = "Test1";
         tinyidp.infrastructure.bdd.Credential ident = new Credential {
             Ident = login,
-            Pass = "$2a$13$notjtDd82e4wrzSSo/6CLeA0/pOuUb9kSRqLxiTC/I/b0JcbWZn0C", 
+            Pass = "AQAAAAEAAYagAAAAEHLSUMSArukchcL6jzL1iKx6sDvXpy2VvI2Q99s81hMh5g846furpiG19NkbhFBisw==", 
             Id = 1,
             RoleIdent = (int)RoleCredential.User
         };
