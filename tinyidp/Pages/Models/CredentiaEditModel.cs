@@ -50,5 +50,5 @@ public class CredentialEditModel
 
     public AlgoKeyType? KeyType { get; set; }
 
-    public IList<CertificateEditModel> Certificates { get; set; } = null!;
+    public IList<CertificateEditModel>? Certificates { get; set; } = null!;
 }
