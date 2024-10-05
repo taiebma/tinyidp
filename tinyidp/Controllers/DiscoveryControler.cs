@@ -4,6 +4,7 @@ using tinyidp.Controllers.Models;
 
 namespace tinyidp.Controllers;
 
+[Route("oauth")]
 public class DiscoveryController: Controller
 {
     private readonly ILogger _logger;
@@ -15,7 +16,7 @@ public class DiscoveryController: Controller
         _configuration = configuration;
     }
 
-    [HttpGet("~/.well-known/openid-configuration")]
+    [HttpGet(".well-known/openid-configuration")]
     public JsonResult GetConfiguration()
     {
         string base_idp_url = _configuration.GetSection("TINYIDP_IDP").GetValue<string>("BASE_URL_IDP")??"https://localhost:7034/";
