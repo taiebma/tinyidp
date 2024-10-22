@@ -50,4 +50,6 @@ public partial class Credential
     public int KeyType { get; set; }
 
     public ICollection<Certificate> Certificates{ get; set; } = null!;
+    public string? Nonce { get; set; } = null!;
+    public string? Scoped { get; set; } = null!;
 }

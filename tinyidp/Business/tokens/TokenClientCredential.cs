@@ -37,17 +37,20 @@ public class TokenClientCredential : ITokenStrategy
     public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, CredentialBusinessEntity client)
     {
         IEnumerable<string> scopes = new List<string>();
-        if (client.AllowedScopes != null)
+        if (client.AllowedScopes != null && request.scope != null)
         {
-            scopes = client.AllowedScopes.Intersect(request.scope??new List<string>());
-            if (!scopes.Any())
+            var allClientScopes = client.AllowedScopes.Concat(TokenService.SupportedScopes);
+            if (request.scope.Where(p => !allClientScopes.Contains(p)).ToList().Count() > 0)
             {
                 throw new TinyidpTokenException("No scope match", "invalid_scope");
             }
+            scopes = allClientScopes.Intersect(request.scope??new List<string>());
         }
+
         TokenResponseBusiness resp = new TokenResponseBusiness();
         resp.access_token = _keysManagment.GenerateJWTToken(
-            client.KeyType, scopes, client.Audiences??new List<string>(), null, client.TokenMaxMinuteValidity);
+            client.KeyType, scopes, client.Audiences??new List<string>(), null, client.TokenMaxMinuteValidity, null);
+        resp.id_token = resp.access_token;
 
         resp.token_type = "Bearer";
 

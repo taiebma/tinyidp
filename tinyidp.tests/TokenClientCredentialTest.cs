@@ -63,7 +63,8 @@ public class TokenClientCredentialTest
             It.IsAny<IEnumerable<string>>(),
             It.IsAny<IEnumerable<string>>(),
             It.IsAny<string?>(),
-            It.IsAny<long>()
+            It.IsAny<long>(),
+            null
         )).Returns("JKHKJHKJH.HGYFFUYFUFU.UGUGJJGHJG");
         
         CredentialBusinessEntity client = new CredentialBusinessEntity {

@@ -8,6 +8,7 @@ using tinyidp.Exceptions;
 using tinyidp.infrastructure.bdd;
 using tinyidp.Extensions;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace tinyidp.Business.tokens;
 
@@ -20,6 +21,8 @@ public class TokenService : ITokenService
     private readonly ITokenRepository _tokenRepository;
     private readonly ICredentialBusiness _credentialBusiness;
     private readonly IThrustStoreService _thrustStoreService;
+
+    public static IList<string> SupportedScopes { get; private set; } = new string[] { "openid", "profile", "email", "address", "phone", "offline_access" };
 
     public TokenService(
             IConfiguration conf, 
@@ -48,7 +51,7 @@ public class TokenService : ITokenService
             throw new TinyidpTokenException("No HTTP Context");
         }
 
-        BasicIdent ident;
+        BasicIdent? ident;
         X509Certificate2? clientCert = httpContext.Connection.ClientCertificate;
         if (clientCert != null && await _thrustStoreService.VerifyWithChain(clientCert))
         {
@@ -64,6 +67,20 @@ public class TokenService : ITokenService
         else
         {
             ident = httpContext.GetBasicIdent();
+            if (ident == null)
+            {
+                ident = new BasicIdent();
+            
+                ident.ClientId = request.client_id??String.Empty;
+                try
+                {
+                    ident.ClientSecret = Encoding.UTF8.GetString(Convert.FromBase64String(request.client_secret??String.Empty));
+                }
+                catch (FormatException)
+                {
+                    ident.ClientSecret = request.client_secret ?? String.Empty;
+                }
+            }
         }
 
         ITokenStrategy? tokenStrategy = null;

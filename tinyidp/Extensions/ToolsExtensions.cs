@@ -71,11 +71,11 @@ public static class ToolsExtensions
         return (RoleCredential)Enum.Parse(typeof(RoleCredential), claimRole.Value);
     }
 
-    public static BasicIdent GetBasicIdent(this HttpContext httpContext)
+    public static BasicIdent? GetBasicIdent(this HttpContext httpContext)
     {
         var authHeader = httpContext.Request.Headers["Authorization"].ToString();
         if (string.IsNullOrEmpty(authHeader))
-            throw new TinyidpTokenException("No Authorization header", "invalid_request");
+            return null;
 
         if (!authHeader.StartsWith("Basic", StringComparison.OrdinalIgnoreCase))
             throw new TinyidpTokenException("For client_credential grant_type, Authorization must be Basic", "invalid_request");

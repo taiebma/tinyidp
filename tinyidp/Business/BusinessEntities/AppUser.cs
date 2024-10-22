@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace tinyidp.Controllers.Models;
+namespace tinyidp.Business.BusinessEntities;
 
 public class AppUser : IdentityUser
 {

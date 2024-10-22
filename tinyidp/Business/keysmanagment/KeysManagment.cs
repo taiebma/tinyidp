@@ -199,7 +199,7 @@ public class KeysManagment : IKeysManagment
         _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
     }
 
-    public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime)
+    public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime, string? nonce)
     {
         string issuer = _conf.GetSection("TINYIDP_IDP")?.GetValue<string>("BASE_URL_IDP")??"https://localhost:7034/";
         var claims = new List<Claim>
@@ -212,6 +212,12 @@ public class KeysManagment : IKeysManagment
         if (!string.IsNullOrEmpty(sub))
         {
             claims.Add(new Claim("sub", sub, ClaimValueTypes.String));
+            claims.Add(new Claim("name", sub, ClaimValueTypes.String));
+        }
+        
+        if (!string.IsNullOrEmpty(nonce))
+        {
+            claims.Add(new Claim("nonce", nonce, ClaimValueTypes.String));
         }
         
         foreach(string aud in audience)
@@ -242,11 +248,14 @@ public class KeysManagment : IKeysManagment
         }
         JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
 
+        DateTime tokenDate = DateTime.UtcNow;
+        DateTimeOffset tokenDateOffset = new DateTimeOffset(tokenDate);
+        claims.Add(new Claim("iat", tokenDateOffset.ToUnixTimeSeconds().ToString()));
         var token1 = new JwtSecurityToken(
             issuer,
             null, 
             claims, 
-            notBefore: DateTime.UtcNow,
+            notBefore: tokenDate,
             expires: DateTime.UtcNow.AddMinutes(lifeTime), 
             signingCredentials: signingCredentials
             );

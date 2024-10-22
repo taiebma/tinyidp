@@ -43,6 +43,9 @@ public class IdentPage : PageModel
     [BindProperty]
     public string? _code_challenge_method { get; set; } = null!;
 
+    [BindProperty]
+    public string? _nonce { get; set; } = null!;
+
     public IdentPage(ILogger<IdentPage> logger, ICredentialBusiness credentialBusiness, IActionContextAccessor accessor)
     {
         _credentialBusiness = credentialBusiness;
@@ -50,7 +53,7 @@ public class IdentPage : PageModel
         _accessor = accessor;
     }
 
-    public void OnGet(string scope, string state, string redirect_uri, string client_id, string code_challenge, string code_challenge_method)
+    public void OnGet(string scope, string state, string redirect_uri, string client_id, string code_challenge, string code_challenge_method, string? nonce)
     {
         _scope = scope;
         _state = state;
@@ -58,6 +61,7 @@ public class IdentPage : PageModel
         _client_id = client_id;
         _code_challenge = code_challenge;
         _code_challenge_method = code_challenge_method;
+        _nonce = nonce;
     }
 
     public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
@@ -65,8 +69,8 @@ public class IdentPage : PageModel
 
         if (ModelState.IsValid)
         {
-            string url = String.Format("/oauth/authorize?response_type=code&redirect_uri={0}&scope={1}&state={2}&client_id={3}&code_challenge={4}&code_challenge_method={5}",
-                HttpUtility.UrlEncode( _redirectUri), _scope, _state, _client_id, _code_challenge, _code_challenge_method);
+            string url = String.Format("/oauth/authorize?response_type=code&redirect_uri={0}&scope={1}&state={2}&client_id={3}&code_challenge={4}&code_challenge_method={5}&nonce={6}",
+                HttpUtility.UrlEncode( _redirectUri), _scope, _state, _client_id, _code_challenge, _code_challenge_method, _nonce);
 
             if (!(await _credentialBusiness.VerifyPassword(_input.Login, _input.Password)))
             {

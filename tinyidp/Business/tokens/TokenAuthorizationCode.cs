@@ -39,15 +39,6 @@ public class TokenAuthorizationCode : ITokenStrategy
 
     public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, CredentialBusinessEntity client)
     {
-        IEnumerable<string> scopes = new List<string>();
-        if (client.AllowedScopes != null)
-        {
-            scopes = client.AllowedScopes.Intersect(request.scope??new List<string>());
-            if (!scopes.Any())
-            {
-                throw new TinyidpTokenException("No scope match", "invalid_scope");
-            }
-        }
 
         if (!String.IsNullOrEmpty(client.CodeChallenge) && string.IsNullOrEmpty(request.code_verifier))
             throw new TinyidpTokenException("Client need code verifier", "invalid_request");
@@ -77,14 +68,15 @@ public class TokenAuthorizationCode : ITokenStrategy
 
         TokenResponseBusiness resp = new TokenResponseBusiness();
         resp.access_token = _keysManagment.GenerateJWTToken(
-            client.KeyType, scopes, client.Audiences??new List<string>(), user.Ident, client.TokenMaxMinuteValidity);
+            client.KeyType, user.Scoped?.Split(' ')??new string[0], client.Audiences??new List<string>(), user.Ident, client.TokenMaxMinuteValidity, user.Nonce);
+        resp.id_token = resp.access_token;
 
         resp.token_type = "Bearer";
 
         // Save informations for refresh token
         RefreshTokenResponse tokenResp = new RefreshTokenResponse()
         {
-            Scopes = scopes, 
+            Scopes = user.Scoped?.Split(' ')??Array.Empty<string>(), 
             Audiences = client.Audiences??new List<string>(), 
             Ident = user.Ident,
             Algo = client.KeyType, 
@@ -94,6 +86,8 @@ public class TokenAuthorizationCode : ITokenStrategy
 
         // Authorization code can be use only one time
         user.AuthorizationCode = "";
+        user.Nonce = "";
+        user.Scoped = "";
         _credentialBusiness.Update(user);
 
         return resp;
@@ -117,7 +111,7 @@ public class TokenAuthorizationCode : ITokenStrategy
         }
         catch (FormatException)
         {
-            throw new TinyidpTokenException("Bad secret format", "invalid_request");
+            secretConverted = request.client_secret ?? String.Empty;
         }
         if (ident.ClientSecret != secretConverted)
             throw new TinyidpTokenException("client_secret of the request is not the same than Authorization header", "invalid_request");

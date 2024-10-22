@@ -202,6 +202,7 @@ public static class ModelsExtensions
         return new TokenResponse() 
         {
             access_token = token.access_token, 
+            id_token = token.id_token,
             code = token.code, 
             refresh_token = token.refresh_token,
             token_type = token.token_type

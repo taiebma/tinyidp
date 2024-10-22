@@ -163,6 +163,12 @@ public partial class TinyidpContext : DbContext
                 .WithOne(e => e.ClientCredential)
                 .HasForeignKey(e => e.IdClient)
                 .HasPrincipalKey(e => e.Id);
+            entity.Property(e => e.Nonce)
+                .HasColumnType("character varying")
+                .HasColumnName("nonce");
+            entity.Property(e => e.Scoped)
+                .HasColumnType("character varying")
+                .HasColumnName("scoped");
         });
 
         modelBuilder.Entity<Kid>(entity =>

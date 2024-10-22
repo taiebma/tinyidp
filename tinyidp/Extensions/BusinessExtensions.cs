@@ -31,6 +31,8 @@ public static class BusinessExtensions
             RefreshToken = entity.RefreshToken,
             CreationDateRefreshToken = entity.CreationDateRefreshToken, 
             KeyType = (int)entity.KeyType,
+            Scoped = entity.Scoped,
+            Nonce = entity.Nonce,
         };
     }
 
@@ -58,7 +60,9 @@ public static class BusinessExtensions
             RefreshToken = entity.RefreshToken,
             CreationDateRefreshToken = entity.CreationDateRefreshToken, 
             KeyType = (AlgoKeyType)Enum.Parse(typeof(AlgoKeyType), entity.KeyType.ToString()),
-            CertificateBusinessEntities = entity.Certificates?.Select(x => x.ToBusiness()).ToList()??new List<CertificateBusinessEntity>()
+            CertificateBusinessEntities = entity.Certificates?.Select(x => x.ToBusiness()).ToList()??new List<CertificateBusinessEntity>(),
+            Scoped = entity.Scoped,
+            Nonce = entity.Nonce,
         };
     }
 

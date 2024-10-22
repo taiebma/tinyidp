@@ -13,5 +13,5 @@ public interface IKeysManagment
     public KidBusinessEntity? LastActive(AlgoType algo);
     public void Update(KidBusinessEntity kid);
     public void Remove(KidBusinessEntity kid);
-    public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime);
+    public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime, string ?nonce);
 }

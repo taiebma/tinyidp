@@ -47,6 +47,9 @@ public partial class CredentialBusinessEntity
 
     public ICollection<CertificateBusinessEntity>? CertificateBusinessEntities { get; set; } = null!;
 
+    public string? Nonce { get; set; } = null!;
+    public string? Scoped { get; set; } = null!;
+
     public CredentialBusinessEntity()
     {
         CreationDate = DateTime.Now;

@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using tinyidp.Encryption;
+using Microsoft.Extensions.Primitives;
+using System.IdentityModel.Tokens.Jwt;
+using tinyidp.Business.tokens;
 
 namespace tinyidp.Business.Credential;
 
@@ -148,21 +151,21 @@ public class CredentialBusiness : ICredentialBusiness
         if (httpContext == null)
             throw new TinyidpCredentialException("No HTTP Context");
  
-        if (string.IsNullOrEmpty(request.response_type) || request.response_type != "code")
+        if (string.IsNullOrEmpty(request.response_type) || !request.response_type.Contains("code"))
            throw new TinyidpCredentialException("response_type must be code");
  
         if (string.IsNullOrEmpty(request.redirect_uri))
            throw new TinyidpCredentialException("No redirect URI");
  
-        if ( (user = await IdentifyUserWithAuthorizeHeader(httpContext)) == null)
-            user = await _credentialRepository.GetByIdentReadOnly(httpContext?.User?.Identity?.Name??String.Empty);
-
+        user = await _credentialRepository.GetByIdentReadOnly(httpContext?.User?.Identity?.Name??String.Empty);
         if (user == null)
         {
             throw new TinyidpCredentialException("User unknown", "invalid_client");
         }
 
-        client = await _credentialRepository.GetByIdentReadOnly(request.client_id);
+#pragma warning disable CS8604 // Null already test on top
+        if ( (client = await IdentifyUserWithAuthorizeHeader(httpContext)) == null)
+            client = await _credentialRepository.GetByIdentReadOnly(request.client_id);
         if (client == null)
         {
             throw new TinyidpCredentialException("Client id unknown", "invalid_client");
@@ -172,7 +175,14 @@ public class CredentialBusiness : ICredentialBusiness
         if (!(client.RedirectUri?.Equals(request.redirect_uri)??false))
             throw new TinyidpCredentialException("No redirect Uri parameter or redirect Uri different");
             
-        CredentialBusinessEntity clientResp = GenerateCode(user, client, request.redirect_uri, request.scope, request.code_challenge, request.code_challenge_method);
+        CredentialBusinessEntity clientResp = GenerateCode(
+            user, 
+            client, 
+            request.redirect_uri, 
+            request.scope, 
+            request.code_challenge, 
+            request.code_challenge_method,
+            request.nonce);
         _credentialRepository.SaveChanges();
         return clientResp;
     }
@@ -242,7 +252,14 @@ public class CredentialBusiness : ICredentialBusiness
         _credentialRepository.Update(user);
     }
 
-    public CredentialBusinessEntity GenerateCode(tinyidp.infrastructure.bdd.Credential user, tinyidp.infrastructure.bdd.Credential client, string redirectUri, string scope, string? code_challenge, string? code_challenge_method)
+    public CredentialBusinessEntity GenerateCode(
+        tinyidp.infrastructure.bdd.Credential user, 
+        tinyidp.infrastructure.bdd.Credential client, 
+        string redirectUri, 
+        string scope, 
+        string? code_challenge, 
+        string? code_challenge_method,
+        string? nonce)
     {
         CredentialBusinessEntity clientResp = client.ToBusiness();
 
@@ -257,10 +274,15 @@ public class CredentialBusiness : ICredentialBusiness
         IEnumerable<string> scopes = new List<string>();
         if (clientResp.AllowedScopes != null)
         {
-            scopes = clientResp.AllowedScopes.Intersect(scope.Split(' '));
-            if (!scopes.Any())
+            if (!string.IsNullOrEmpty(scope))
             {
-                throw new TinyidpCredentialException("No scope match", "invalid_scope");
+                var allClientScopes = clientResp.AllowedScopes.Concat(TokenService.SupportedScopes);
+                var tabScope = scope.Split(' ').ToList();
+                if (tabScope.Where(p => !allClientScopes.Contains(p)).ToList().Count() > 0)
+                {
+                    throw new TinyidpTokenException("No scope match", "invalid_scope");
+                }
+                scopes = allClientScopes.Intersect(tabScope);
             }
         }
 
@@ -274,6 +296,11 @@ public class CredentialBusiness : ICredentialBusiness
         _credentialRepository.Update(client);
 
         user.AuthorizationCode = code;
+        user.Scoped = string.Join(' ', scopes);
+        if (!string.IsNullOrEmpty(nonce))
+        {
+            user.Nonce = nonce;
+        }
         _credentialRepository.Update(user);
 
         clientResp = client.ToBusiness();
@@ -308,4 +335,27 @@ public class CredentialBusiness : ICredentialBusiness
         return cred?.ToBusiness();
     }
 
+    public AppUser GetUserInfo(HttpContext? context)
+    {
+        if (context == null)
+        {
+            throw new TinyidpCredentialException("No http context");
+        }
+
+        StringValues authorization = context.Request.Headers["Authorization"];
+        if (authorization.Count == 0)
+        {
+            throw new TinyidpCredentialException("No bearer token");
+        }
+        string token = authorization.First()?.Substring("Bearer ".Length)??"";
+
+        JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+        JwtSecurityToken jwtSecurityToken = handler.ReadJwtToken(token);
+
+        AppUser user = new AppUser() {
+             sub = jwtSecurityToken.Claims.First(claim => claim.Type == "sub").Value,
+             name = jwtSecurityToken.Claims.First(claim => claim.Type == "sub").Value
+        };
+        return user;
+    }
 }

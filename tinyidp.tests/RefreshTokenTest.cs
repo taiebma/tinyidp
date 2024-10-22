@@ -129,7 +129,8 @@ public class RefreshTokenTest
             It.IsAny<IEnumerable<string>>(),
             It.IsAny<IEnumerable<string>>(),
             It.IsAny<string?>(),
-            It.IsAny<long>()
+            It.IsAny<long>(),
+            null
         )).Returns("JKHKJHKJH.HGYFFUYFUFU.UGUGJJGHJG");
         
         TokenResponseBusiness resp = _refreshToken.GetTokenByType(request, client);

@@ -9,7 +9,7 @@ using tinyidp.infrastructure.keysmanagment;
 namespace tinyidp.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("oauth")]
 public class KeysController: Controller
 {
     private readonly ILogger _logger;
@@ -23,7 +23,7 @@ public class KeysController: Controller
         _keyManagment = keysManagment;
     }
 
-   [HttpGet("jwks.json")]
+   [HttpGet("keys/jwks.json")]
     public IActionResult Jwks()
     {
         List<KidBusinessEntity> kids = _keyManagment.GetActiveKeys();

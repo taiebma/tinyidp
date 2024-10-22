@@ -8,7 +8,7 @@ public class TokenResponse
     /// <summary>
     /// Oauth 2
     /// </summary>
-    public string access_token { get; set; } = null!;
+    public string id_token { get; set; } = null!;
 
     /// <summary>
     /// By default is Bearer
@@ -16,6 +16,7 @@ public class TokenResponse
 
     public string token_type { get; set; } = TokenTypeEnum.Bearer.GetEnumDescription();
 
+    public string access_token { get; set; } = null!;
     /// <summary>
     /// Authorization Code. This is always returned when using the Hybrid Flow.
     /// </summary>

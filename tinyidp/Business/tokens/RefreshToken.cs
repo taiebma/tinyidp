@@ -64,7 +64,8 @@ public class RefreshToken : ITokenStrategy
 
         TokenResponseBusiness resp = new TokenResponseBusiness();
         resp.access_token = _keysManagment.GenerateJWTToken(
-            refreshTokenResponse.Algo, refreshTokenResponse.Scopes, refreshTokenResponse.Audiences, refreshTokenResponse.Ident, refreshTokenResponse.LifeTime);
+            refreshTokenResponse.Algo, refreshTokenResponse.Scopes, refreshTokenResponse.Audiences, refreshTokenResponse.Ident, refreshTokenResponse.LifeTime, null);
+        resp.id_token = resp.access_token;
 
         resp.token_type = "Bearer";
 

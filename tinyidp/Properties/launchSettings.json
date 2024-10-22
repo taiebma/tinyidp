@@ -29,7 +29,7 @@
         "TINYIDP_BDDCONFIG__BDDNAME": "tinyidp",
         "TINYIDP_BDDCONFIG__USERNAME": "tinyidp",
         "TINYIDP_SECU__PATH": ".",
-        "TINYIDP_IDP__BASE_URL_IDP": "https://localhost:8081",
+        "TINYIDP_IDP__BASE_URL_IDP": "https://localhost:8083/oauth",
         "TINYIDP_IDP__TOKEN_LIFETIME": "5"
       }
     },

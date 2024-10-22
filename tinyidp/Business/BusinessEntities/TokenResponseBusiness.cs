@@ -20,6 +20,7 @@ public class TokenResponseBusiness
     /// </summary>
 
     public string token_type { get; set; } = null!;
+    public string nonce { get; set; } = null!;
 
     /// <summary>
     /// Authorization Code. This is always returned when using the Hybrid Flow.
