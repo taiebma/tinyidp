@@ -39,7 +39,7 @@ public class RefreshToken : ITokenStrategy
         _encryptionService = encryptionService;
     }
 
-    public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, CredentialBusinessEntity client)
+    public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, infrastructure.bdd.Credential client)
     {
         if (client.CreationDateRefreshToken == null)
         {
@@ -74,7 +74,7 @@ public class RefreshToken : ITokenStrategy
         return resp;
     }
 
-    public bool VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, CredentialBusinessEntity client, bool checkPwd)
+    public bool VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, infrastructure.bdd.Credential client, bool checkPwd)
     {
         if (ident.ClientId != client.Ident)
             throw new TinyidpTokenException("Client corresponding of the refresh_token is not the same than Authorization header", "invalid_request");

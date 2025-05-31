@@ -1,0 +1,18 @@
+
+GET https://{{host}}/oauth/.well-known/openid-configuration
+
+###
+
+GET {{host}}/oauth/authorize&response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}&scope={{scope}}&state=ABCD
+
+###
+# @name login
+POST {{host}}/oauth/token
+Content-Type: application/x-www-form-urlencoded
+
+code=wq_XBB7n9vYnOliBgtcCfDt6vSMrQzVI5gVarUvehbs&grant_type=authorization_code&redirect_uri={{redirect_uri}}&client_id={{client_id}}&client_secret={{client_secret}}&scope={{scope}}
+
+###
+
+GET https://nas2.taieb.fr:49158/Certificate/CAs HTTP/1.1
+Authorization: Bearer {{login.response.body.access_token}}

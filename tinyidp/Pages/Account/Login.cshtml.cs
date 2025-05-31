@@ -90,7 +90,7 @@ public class LoginPage : PageModel
 
         if (await _credentialBusiness.VerifyPassword(login, password))
         {
-            CredentialBusinessEntity? ident  = await  _credentialBusiness.GetByIdent(login);
+            CredentialBusinessEntity? ident  = await  _credentialBusiness.GetByIdent(login).ToBusinessAsync();
             return ident;
         }
         else

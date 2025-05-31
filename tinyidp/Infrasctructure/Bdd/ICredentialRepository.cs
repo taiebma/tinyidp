@@ -1,4 +1,6 @@
 
+using tinyidp.Business.BusinessEntities;
+
 namespace tinyidp.infrastructure.bdd;
 
 public interface ICredentialRepository

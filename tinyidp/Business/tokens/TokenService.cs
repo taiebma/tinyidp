@@ -44,7 +44,7 @@ public class TokenService : ITokenService
 
     public async Task<TokenResponseBusiness> GetToken(HttpContext? httpContext, TokenRequestBusiness request)
     {
-        CredentialBusinessEntity? client = null;
+        infrastructure.bdd.Credential? client = null;
 
         if (httpContext == null)
         {
@@ -124,7 +124,7 @@ public class TokenService : ITokenService
 
         client.RefreshToken = resp.refresh_token;
         client.CreationDateRefreshToken = DateTime.Now;
-        _credentialBusiness.Update(client);
+        _credentialBusiness.UpdateEntity(client);
         
         return resp;
     }

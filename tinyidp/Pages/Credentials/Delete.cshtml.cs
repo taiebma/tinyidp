@@ -29,7 +29,7 @@ public class DeleteModel : PageModel
 
     public void OnGet(int id)
     {
-        CredentialBusinessEntity result = _credentialBusiness.Get((int)id);
+        CredentialBusinessEntity result = _credentialBusiness.Get((int)id).ToBusiness();
         _credentialDelete = result.ToModelEdit();
         
         if (User.Claims.Role() != RoleCredential.Admin)

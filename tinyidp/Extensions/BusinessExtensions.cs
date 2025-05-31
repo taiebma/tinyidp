@@ -66,16 +66,53 @@ public static class BusinessExtensions
         };
     }
 
+    public static async Task<CredentialBusinessEntity?> ToBusinessAsync(this Task<Credential?> entity)
+    {
+        if (entity == null || entity.Result == null)
+        {
+            return await Task.FromResult<CredentialBusinessEntity?>(null);
+        }
+
+        return await Task.FromResult(new CredentialBusinessEntity()
+        {
+            Id = entity.Result.Id,
+            Ident = entity.Result.Ident,
+            Pass = entity.Result.Pass,
+            PassNew = entity.Result.Pass,
+            State = (StateCredential)Enum.Parse(typeof(StateCredential), entity.Result.State.ToString()),
+            NbMaxRenew = entity.Result.NbMaxRenew,
+            RefreshMaxMinuteValidity = entity.Result.RefreshMaxMinuteValidity,
+            RoleIdent = (RoleCredential)Enum.Parse(typeof(RoleCredential), entity.Result.RoleIdent.ToString()),
+            TokenMaxMinuteValidity = entity.Result.TokenMaxMinuteValidity,
+            CreationDate = entity.Result.CreationDate,
+            LastIdent = entity.Result.LastIdent,
+            MustChangePwd = entity.Result.MustChangePwd,
+            AllowedScopes = entity.Result.AllowedScopes?.Split(' ') ?? new string[0],
+            Audiences = entity.Result.Audiences?.Split(' ') ?? new string[0],
+            AuthorizationCode = entity.Result.AuthorizationCode,
+            RedirectUri = entity.Result.RedirectUri,
+            CodeChallenge = entity.Result.CodeChallenge,
+            CodeChallengeMethod = entity.Result.CodeChallengeMethod,
+            RefreshToken = entity.Result.RefreshToken,
+            CreationDateRefreshToken = entity.Result.CreationDateRefreshToken,
+            KeyType = (AlgoKeyType)Enum.Parse(typeof(AlgoKeyType), entity.Result.KeyType.ToString()),
+            CertificateBusinessEntities = entity.Result.Certificates?.Select(x => x.ToBusiness()).ToList() ?? new List<CertificateBusinessEntity>(),
+            Scoped = entity.Result.Scoped,
+            Nonce = entity.Result.Nonce,
+        });
+    }
+
     public static CertificateBusinessEntity ToBusiness(this Certificate certificate)
     {
-        return new CertificateBusinessEntity() {
-            Id = certificate.Id, 
-            ValidityDate = certificate.ValidityDate, 
-            LastIdent = certificate.LastIdent, 
-            Dn = certificate.Dn, 
-            Issuer = certificate.Issuer, 
-            Serial = certificate.Serial, 
-            State = certificate.State, 
+        return new CertificateBusinessEntity()
+        {
+            Id = certificate.Id,
+            ValidityDate = certificate.ValidityDate,
+            LastIdent = certificate.LastIdent,
+            Dn = certificate.Dn,
+            Issuer = certificate.Issuer,
+            Serial = certificate.Serial,
+            State = certificate.State,
             IdClient = certificate.IdClient
         };
     }

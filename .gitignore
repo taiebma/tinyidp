@@ -6,7 +6,6 @@ launch.json
 certs
 _site
 api
-build.sh
 ssl
 tinyidp.key
 *.nettrace

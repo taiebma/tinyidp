@@ -6,6 +6,6 @@ namespace tinyidp.Business.tokens;
 public interface ITokenStrategy
 {
     static TokenTypeEnum Type {get;}
-    TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, CredentialBusinessEntity client);
-    public bool VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, CredentialBusinessEntity client, bool checkPwd);
+    TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, infrastructure.bdd.Credential client);
+    public bool VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, infrastructure.bdd.Credential client, bool checkPwd);
 }

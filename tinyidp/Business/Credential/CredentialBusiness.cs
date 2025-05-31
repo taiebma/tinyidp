@@ -55,30 +55,30 @@ public class CredentialBusiness : ICredentialBusiness
         return result.Select(p => p.ToBusiness()).ToList();
     }
 
-    public async Task<CredentialBusinessEntity?> GetByIdent(string ident)
+    public async Task<infrastructure.bdd.Credential?> GetByIdent(string ident)
     {
-        var result = await _credentialRepository.GetByIdentReadOnly(ident);
-        return result?.ToBusiness();
+        var result = await _credentialRepository.GetByIdent(ident);
+        return result;
     }
 
-    public async Task<CredentialBusinessEntity?> GetByAuthorizationCode(string code)
+    public async Task<infrastructure.bdd.Credential?> GetByAuthorizationCode(string code)
     {
         var result = await _credentialRepository.GetByAuthorizationCode(code);
-        return result?.ToBusiness();
+        return result;
     }
 
-    public async Task<CredentialBusinessEntity?> GetByRefreshToken(string token)
+    public async Task<infrastructure.bdd.Credential?> GetByRefreshToken(string token)
     {
         var result = await _credentialRepository.GetByRefreshToken(token);
-        return result?.ToBusiness();
+        return result;
     }
 
-    public CredentialBusinessEntity Get(int id)
+    public infrastructure.bdd.Credential Get(int id)
     {
         var result =  _credentialRepository.GetByIdReadOnly(id);
         if (result == null)
             throw new Exception("Credential not found");
-        return result.ToBusiness();
+        return result;
     }
 
     public CredentialBusinessEntity GetWithCertificates(int id)
@@ -95,6 +95,11 @@ public class CredentialBusiness : ICredentialBusiness
             entity.Pass = _hashedPasswordPbkbf2.GetHashedPasswordPbkbf2(entity.PassNew);
 //            entity.Pass = BCrypt.Net.BCrypt.EnhancedHashPassword(entity.PassNew, 13);
         _credentialRepository.Update(entity.ToEntity());
+        _credentialRepository.SaveChanges();
+   }
+
+    public void UpdateEntity(infrastructure.bdd.Credential entity)
+    {
         _credentialRepository.SaveChanges();
    }
 
@@ -329,10 +334,10 @@ public class CredentialBusiness : ICredentialBusiness
         _certificateRepository.Remove(entity.ToEntity());
     }
 
-    public async Task<CredentialBusinessEntity?> GetCredentialByCertificate(string serial, string issuer)
+    public async Task<infrastructure.bdd.Credential?> GetCredentialByCertificate(string serial, string issuer)
     {
         var cred = await _credentialRepository.GetCredentialByCertificate(serial, issuer);
-        return cred?.ToBusiness();
+        return cred;
     }
 
     public AppUser GetUserInfo(HttpContext? context)

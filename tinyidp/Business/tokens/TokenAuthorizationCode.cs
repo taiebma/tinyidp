@@ -37,7 +37,7 @@ public class TokenAuthorizationCode : ITokenStrategy
         _pkceService = pkceService;
     }
 
-    public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, CredentialBusinessEntity client)
+    public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, infrastructure.bdd.Credential client)
     {
 
         if (!String.IsNullOrEmpty(client.CodeChallenge) && string.IsNullOrEmpty(request.code_verifier))
@@ -60,7 +60,7 @@ public class TokenAuthorizationCode : ITokenStrategy
         if (String.IsNullOrEmpty(request.code))
             throw new TinyidpTokenException("No authorization code", "invalid_request");
 
-        CredentialBusinessEntity? user = _credentialBusiness.GetByAuthorizationCode(request.code).Result;
+        infrastructure.bdd.Credential? user = _credentialBusiness.GetByAuthorizationCode(request.code).Result;
         if (user == null)
         {
             throw new TinyidpTokenException("Authorization code not found");
@@ -68,7 +68,12 @@ public class TokenAuthorizationCode : ITokenStrategy
 
         TokenResponseBusiness resp = new TokenResponseBusiness();
         resp.access_token = _keysManagment.GenerateJWTToken(
-            client.KeyType, user.Scoped?.Split(' ')??new string[0], client.Audiences??new List<string>(), user.Ident, client.TokenMaxMinuteValidity, user.Nonce);
+            (AlgoKeyType)Enum.Parse(typeof(AlgoKeyType), client.KeyType.ToString()),
+            user.Scoped?.Split(' ')??Array.Empty<string>(),
+            client.Audiences?.Split(' ')??Array.Empty<string>(),
+            user.Ident,
+            client.TokenMaxMinuteValidity,
+            user.Nonce);
         resp.id_token = resp.access_token;
 
         resp.token_type = "Bearer";
@@ -77,9 +82,9 @@ public class TokenAuthorizationCode : ITokenStrategy
         RefreshTokenResponse tokenResp = new RefreshTokenResponse()
         {
             Scopes = user.Scoped?.Split(' ')??Array.Empty<string>(), 
-            Audiences = client.Audiences??new List<string>(), 
+            Audiences = client.Audiences?.Split(' ')??Array.Empty<string>(), 
             Ident = user.Ident,
-            Algo = client.KeyType, 
+            Algo = (AlgoKeyType)Enum.Parse(typeof(AlgoKeyType), client.KeyType.ToString()),
             LifeTime = client.TokenMaxMinuteValidity
         };
         resp.refreshTokenResponse = tokenResp;
@@ -88,14 +93,14 @@ public class TokenAuthorizationCode : ITokenStrategy
         user.AuthorizationCode = "";
         user.Nonce = "";
         user.Scoped = "";
-        _credentialBusiness.Update(user);
+        _credentialBusiness.UpdateEntity(user);
 
         return resp;
     }
 
-    public bool VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, CredentialBusinessEntity client, bool checkPwd)
+    public bool VerifyClientIdent(BasicIdent ident, TokenRequestBusiness request, infrastructure.bdd.Credential client, bool checkPwd)
     {
-        if (client.RoleIdent != RoleCredential.Client)
+        if (client.RoleIdent != (int)RoleCredential.Client)
             throw new TinyidpTokenException("Only client role can use client_credential", "unsupported_grant_type");
 
         if (ident.ClientId != request.client_id)

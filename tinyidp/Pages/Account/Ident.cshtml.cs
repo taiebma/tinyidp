@@ -12,6 +12,7 @@ using System.Web;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using tinyidp.Extensions;
 
 namespace tinyidp.Pages.Account;
     
@@ -78,7 +79,7 @@ public class IdentPage : PageModel
                 return Page();
             }
 
-            CredentialBusinessEntity? user = await _credentialBusiness.GetByIdent(_input.Login);
+            CredentialBusinessEntity? user = await _credentialBusiness.GetByIdent(_input.Login).ToBusinessAsync();
             if (user == null)
             {
                 _input.ExceptionMessage = "User does not exists";
@@ -99,7 +100,7 @@ public class IdentPage : PageModel
 
         if (await _credentialBusiness.VerifyPassword(login, password))
         {
-            CredentialBusinessEntity? ident  = await  _credentialBusiness.GetByIdent(login);
+            CredentialBusinessEntity? ident  = await  _credentialBusiness.GetByIdent(login).ToBusinessAsync();
             return ident;
         }
         else

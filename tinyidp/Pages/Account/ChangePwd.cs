@@ -37,12 +37,12 @@ public class ChangePwdPage : PageModel
 
         if (int.TryParse(ident, out id))
         {
-             user = _credentialBusiness.Get(id);
+             user = _credentialBusiness.Get(id).ToBusiness();
 
         }
         else
         {
-            user = await _credentialBusiness.GetByIdent(ident);
+            user = await _credentialBusiness.GetByIdent(ident).ToBusinessAsync();
         }
 
         if (user == null)
@@ -61,7 +61,7 @@ public class ChangePwdPage : PageModel
     {
         if (ModelState.IsValid)
         {
-            var user = _credentialBusiness.Get(_changePwdModel.Id);
+            var user = _credentialBusiness.Get(_changePwdModel.Id).ToBusiness();
             if (!user.MustChangePwd)
             {
                 _changePwdModel.ExceptionMessage = "Error you don't have right for doing this";
