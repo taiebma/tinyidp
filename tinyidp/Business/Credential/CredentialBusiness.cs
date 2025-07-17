@@ -161,16 +161,20 @@ public class CredentialBusiness : ICredentialBusiness
  
         if (string.IsNullOrEmpty(request.redirect_uri))
            throw new TinyidpCredentialException("No redirect URI");
- 
-        user = await _credentialRepository.GetByIdentReadOnly(httpContext?.User?.Identity?.Name??String.Empty);
+
+        if (httpContext.User == null || httpContext.User?.Identity?.IsAuthenticated == false)
+        {
+            user = await IdentifyUserWithAuthorizeHeader(httpContext);
+        }
+        else
+            user = await _credentialRepository.GetByIdentReadOnly(httpContext?.User?.Identity?.Name??String.Empty);
         if (user == null)
         {
             throw new TinyidpCredentialException("User unknown", "invalid_client");
         }
 
 #pragma warning disable CS8604 // Null already test on top
-        if ( (client = await IdentifyUserWithAuthorizeHeader(httpContext)) == null)
-            client = await _credentialRepository.GetByIdentReadOnly(request.client_id);
+        client = await _credentialRepository.GetByIdentReadOnly(request.client_id);
         if (client == null)
         {
             throw new TinyidpCredentialException("Client id unknown", "invalid_client");
@@ -208,22 +212,19 @@ public class CredentialBusiness : ICredentialBusiness
         if (authorizationResult == -1)
             throw new TinyidpCredentialException("Basic Authorization must be <client_id>:<client_secret> format", "invalid_request");
 
-        string clientId = authorizationKeys.Substring(0, authorizationResult);
-        string clientSecret = authorizationKeys.Substring(authorizationResult + 1);
+        string realUser = authorizationKeys.Substring(0, authorizationResult);
+        string realUserPassword = authorizationKeys.Substring(authorizationResult + 1);
 
-        tinyidp.infrastructure.bdd.Credential? user = await _credentialRepository.GetByIdentReadOnly(clientId);
+        if (!VerifyPassword(realUser, realUserPassword).Result)
+            throw new TinyidpCredentialException("Invalid user or password", "invalid_request");
+
+        tinyidp.infrastructure.bdd.Credential? user = await _credentialRepository.GetByIdentReadOnly(realUser);
 
         if (user != null)
         {
             if (user.RoleIdent != (int)RoleCredential.User)
                 throw new TinyidpCredentialException("This type of user cannot obtain authorization code", "invalid_request");
         }
-        else
-        {
-                throw new TinyidpCredentialException("Invalid client id or client secret", "invalid_request");
-        }
-        if (!CheckPassword(user.Pass, clientSecret))
-            throw new TinyidpCredentialException("Invalid client id or client secret", "invalid_request");
 
         UpdateLastUserConnection(user);
 
