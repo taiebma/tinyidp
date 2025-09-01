@@ -147,7 +147,7 @@ public class TokenServiceTest
              client_id = "Test9",
              grant_type = ""
         };
-        CredentialBusinessEntity? client = new CredentialBusinessEntity{
+        tinyidp.infrastructure.bdd.Credential? client = new tinyidp.infrastructure.bdd.Credential{
              Ident = "Test9"
         };
         TokenResponseBusiness tokenResp = new TokenResponseBusiness {
@@ -160,11 +160,11 @@ public class TokenServiceTest
         _connectionInfoMock.Setup(x => x.ClientCertificate).Returns(cert);
         _contextMock.Setup(x => x.Connection).Returns(_connectionInfoMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
-        _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>())).Returns(tokenResp);
-        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(true);
+        _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<tinyidp.infrastructure.bdd.Credential>())).Returns(tokenResp);
+        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<tinyidp.infrastructure.bdd.Credential>(), It.IsAny<bool>())).Returns(true);
         _serviceProviderMock.Setup(x => x.GetService(typeof(TokenAuthorizationCode))).Returns(_tokenStrategyMock.Object);
 
-        _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<CredentialBusinessEntity?>(client));
+        _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<tinyidp.infrastructure.bdd.Credential?>(client));
 
         TinyidpTokenException ex = await Assert.ThrowsAsync<TinyidpTokenException>( async () => await _tokenService.GetToken(_contextMock.Object, request));
 
@@ -180,7 +180,7 @@ public class TokenServiceTest
              client_id = "Test9",
              grant_type = "code"
         };
-        CredentialBusinessEntity? client = null;
+        tinyidp.infrastructure.bdd.Credential? client = null;
         TokenResponseBusiness tokenResp = new TokenResponseBusiness {
              access_token = "HKJHKJHKJHKJHK",
              refresh_token = "KLJLJLKJLKJL"
@@ -191,11 +191,11 @@ public class TokenServiceTest
         _connectionInfoMock.Setup(x => x.ClientCertificate).Returns(cert);
         _contextMock.Setup(x => x.Connection).Returns(_connectionInfoMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
-        _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>())).Returns(tokenResp);
-        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(true);
+        _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<tinyidp.infrastructure.bdd.Credential>())).Returns(tokenResp);
+        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<tinyidp.infrastructure.bdd.Credential>(), It.IsAny<bool>())).Returns(true);
         _serviceProviderMock.Setup(x => x.GetRequiredKeyedService(It.IsAny<Type>(), It.IsAny<object?>())).Returns(_tokenStrategyMock.Object);
 
-        _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<CredentialBusinessEntity?>(client));
+        _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<tinyidp.infrastructure.bdd.Credential?>(client));
 
         TinyidpTokenException ex = await Assert.ThrowsAsync<TinyidpTokenException>( async () => await _tokenService.GetToken(_contextMock.Object, request));
 
@@ -211,7 +211,7 @@ public class TokenServiceTest
              client_id = "Test9",
              grant_type = "code"
         };
-        CredentialBusinessEntity? client = new CredentialBusinessEntity{
+        tinyidp.infrastructure.bdd.Credential? client = new tinyidp.infrastructure.bdd.Credential{
              Ident = "Test9"
         };
         TokenResponseBusiness tokenResp = new TokenResponseBusiness {
@@ -224,11 +224,11 @@ public class TokenServiceTest
         _connectionInfoMock.Setup(x => x.ClientCertificate).Returns(cert);
         _contextMock.Setup(x => x.Connection).Returns(_connectionInfoMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
-        _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>())).Returns(tokenResp);
-        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(false);
+        _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<tinyidp.infrastructure.bdd.Credential>())).Returns(tokenResp);
+        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<tinyidp.infrastructure.bdd.Credential>(), It.IsAny<bool>())).Returns(false);
         _serviceProviderMock.Setup(x => x.GetRequiredKeyedService(It.IsAny<Type>(), It.IsAny<object?>())).Returns(_tokenStrategyMock.Object);
 
-        _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<CredentialBusinessEntity?>(client));
+        _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<tinyidp.infrastructure.bdd.Credential?>(client));
 
         TinyidpTokenException ex = await Assert.ThrowsAsync<TinyidpTokenException>( async () => await _tokenService.GetToken(_contextMock.Object, request));
 
@@ -244,7 +244,7 @@ public class TokenServiceTest
              client_id = "Test9",
              grant_type = "code"
         };
-        CredentialBusinessEntity? client = new CredentialBusinessEntity{
+        tinyidp.infrastructure.bdd.Credential? client = new tinyidp.infrastructure.bdd.Credential{
              Ident = "Test9"
         };
         TokenResponseBusiness tokenResp = new TokenResponseBusiness {
@@ -257,12 +257,12 @@ public class TokenServiceTest
         _connectionInfoMock.Setup(x => x.ClientCertificate).Returns(cert);
         _contextMock.Setup(x => x.Connection).Returns(_connectionInfoMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
-        _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>())).Returns(tokenResp);
-        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<CredentialBusinessEntity>(), It.IsAny<bool>())).Returns(true);
+        _tokenStrategyMock.Setup(x => x.GetTokenByType(It.IsAny<TokenRequestBusiness>(), It.IsAny<tinyidp.infrastructure.bdd.Credential>())).Returns(tokenResp);
+        _tokenStrategyMock.Setup(x => x.VerifyClientIdent(It.IsAny<BasicIdent>(), It.IsAny<TokenRequestBusiness>(), It.IsAny<tinyidp.infrastructure.bdd.Credential>(), It.IsAny<bool>())).Returns(true);
         _serviceProviderMock.Setup(x => x.GetRequiredKeyedService(It.IsAny<Type>(), It.IsAny<object?>())).Returns(_tokenStrategyMock.Object);
         _encryptionServiceMock.Setup(x => x.Encrypt(It.IsAny<string>())).Returns("lkjlkljkKLJLJ");
-        
-        _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<CredentialBusinessEntity?>(client));
+
+        _credentialBusinessMock.Setup(x => x.GetByIdent(It.IsAny<string>())).Returns(Task.FromResult<tinyidp.infrastructure.bdd.Credential?>(client));
 
         TokenResponseBusiness token =  await _tokenService.GetToken(_contextMock.Object, request);
 
