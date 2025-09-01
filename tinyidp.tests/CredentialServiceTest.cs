@@ -435,10 +435,10 @@ public class CredentialServiceTest
     [Fact]
     public void GenerateCode_NoRedirectUri_ResultException()
     {
-        Credential? client = new Credential {
+        tinyidp.infrastructure.bdd.Credential? client = new tinyidp.infrastructure.bdd.Credential {
             Ident = "Test9", RoleIdent = (int)RoleCredential.Client
         };
-        Credential? user = new Credential {
+        tinyidp.infrastructure.bdd.Credential? user = new tinyidp.infrastructure.bdd.Credential {
             Ident = "Test1"
         };
         string redirectUri = "https://localhost";
@@ -448,7 +448,7 @@ public class CredentialServiceTest
 
         TinyidpCredentialException ex = Assert.Throws<TinyidpCredentialException>(
             () => 
-                 _credentialBusiness.GenerateCode(user, client, redirectUri, scope, code_challenge, code_challenge_method)
+                 _credentialBusiness.GenerateCode(user, client, redirectUri, scope, code_challenge, code_challenge_method, null)
             );
 
         Assert.Equal("No redirect URL configured for this user", ex.Message);
@@ -457,10 +457,10 @@ public class CredentialServiceTest
     [Fact]
     public void GenerateCode_NotHttps_ResultException()
     {
-        Credential? client = new Credential {
+        tinyidp.infrastructure.bdd.Credential? client = new tinyidp.infrastructure.bdd.Credential {
             Ident = "Test9", RoleIdent = (int)RoleCredential.Client, RedirectUri = "http://localhost", AllowedScopes = "scope1"
         };
-        Credential? user = new Credential {
+        tinyidp.infrastructure.bdd.Credential? user = new tinyidp.infrastructure.bdd.Credential {
             Ident = "Test1"
         };
         string redirectUri = "https://localhost";
@@ -470,7 +470,7 @@ public class CredentialServiceTest
 
         TinyidpCredentialException ex = Assert.Throws<TinyidpCredentialException>(
             () => 
-                 _credentialBusiness.GenerateCode(user, client, redirectUri, scope, code_challenge, code_challenge_method)
+                 _credentialBusiness.GenerateCode(user, client, redirectUri, scope, code_challenge, code_challenge_method, null)
             );
 
         Assert.Equal("Redirect URL must be HTTPs", ex.Message);
@@ -479,10 +479,10 @@ public class CredentialServiceTest
     [Fact]
     public void GenerateCode_DifferentRedirectUri_ResultException()
     {
-        Credential? client = new Credential {
+        tinyidp.infrastructure.bdd.Credential? client = new tinyidp.infrastructure.bdd.Credential {
             Ident = "Test9", RoleIdent = (int)RoleCredential.Client, RedirectUri = "https://localhost:8080", AllowedScopes = "scope1"
         };
-        Credential? user = new Credential {
+        tinyidp.infrastructure.bdd.Credential? user = new tinyidp.infrastructure.bdd.Credential {
             Ident = "Test1"
         };
         string redirectUri = "https://localhost";
@@ -492,7 +492,7 @@ public class CredentialServiceTest
 
         TinyidpCredentialException ex = Assert.Throws<TinyidpCredentialException>(
             () => 
-                 _credentialBusiness.GenerateCode(user, client, redirectUri, scope, code_challenge, code_challenge_method)
+                 _credentialBusiness.GenerateCode(user, client, redirectUri, scope, code_challenge, code_challenge_method, null)
             );
 
         Assert.Equal("Redirect URL does not match configuration", ex.Message);
@@ -501,10 +501,10 @@ public class CredentialServiceTest
     [Fact]
     public void GenerateCode_NoScope_ResultException()
     {
-        Credential? client = new Credential {
+        tinyidp.infrastructure.bdd.Credential? client = new tinyidp.infrastructure.bdd.Credential {
             Ident = "Test9", RoleIdent = (int)RoleCredential.Client, RedirectUri = "https://localhost"
         };
-        Credential? user = new Credential {
+        tinyidp.infrastructure.bdd.Credential? user = new tinyidp.infrastructure.bdd.Credential {
             Ident = "Test1"
         };
         string redirectUri = "https://localhost";
@@ -514,7 +514,7 @@ public class CredentialServiceTest
 
         TinyidpCredentialException ex = Assert.Throws<TinyidpCredentialException>(
             () => 
-                 _credentialBusiness.GenerateCode(user, client, redirectUri, scope, code_challenge, code_challenge_method)
+                 _credentialBusiness.GenerateCode(user, client, redirectUri, scope, code_challenge, code_challenge_method, null)
             );
 
         Assert.Equal("No scope match", ex.Message);

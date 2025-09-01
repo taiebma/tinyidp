@@ -42,10 +42,10 @@ public class TokenClientCredentialTest
         TokenRequestBusiness request = new TokenRequestBusiness{
              client_id = "Test9", client_secret = "Test9", grant_type = "token", redirect_uri = "https://localhost", scope = new List<string> {""}
         };
-        CredentialBusinessEntity client = new CredentialBusinessEntity {
-             Id = 1, Ident = "Test9", State = StateCredential.Active, KeyType = AlgoKeyType.ES256,
-             AllowedScopes = new List<string> { "scope1"},
-             Audiences = new List<string> { "aud1"},
+        tinyidp.infrastructure.bdd.Credential client = new tinyidp.infrastructure.bdd.Credential {
+             Id = 1, Ident = "Test9", State = (int)StateCredential.Active, KeyType = (int)AlgoKeyType.ES256,
+             AllowedScopes = "scope1",
+             Audiences = "aud1",
              TokenMaxMinuteValidity = 3600
         };
 
@@ -66,11 +66,11 @@ public class TokenClientCredentialTest
             It.IsAny<long>(),
             null
         )).Returns("JKHKJHKJH.HGYFFUYFUFU.UGUGJJGHJG");
-        
-        CredentialBusinessEntity client = new CredentialBusinessEntity {
-             Id = 1, Ident = "Test9", State = StateCredential.Active, KeyType = AlgoKeyType.ES256,
-             AllowedScopes = new List<string> { "scope1"},
-             Audiences = new List<string> { "aud1"},
+
+        tinyidp.infrastructure.bdd.Credential client = new tinyidp.infrastructure.bdd.Credential {
+             Id = 1, Ident = "Test9", State = (int)StateCredential.Active, KeyType = (int)AlgoKeyType.ES256,
+             AllowedScopes = "scope1",
+             Audiences = "aud1",
              TokenMaxMinuteValidity = 3600
         };
 
@@ -89,8 +89,8 @@ public class TokenClientCredentialTest
         TokenRequestBusiness request = new TokenRequestBusiness {
             client_id = "Test9", client_secret = "Test9"
         };
-        CredentialBusinessEntity client =  new CredentialBusinessEntity {
-             Id = 1, Ident = "Test9", RoleIdent = RoleCredential.User
+        tinyidp.infrastructure.bdd.Credential client =  new tinyidp.infrastructure.bdd.Credential {
+             Id = 1, Ident = "Test9", RoleIdent = (int)RoleCredential.User
         };
         bool checkedPwd = false;    
 
@@ -110,8 +110,8 @@ public class TokenClientCredentialTest
         TokenRequestBusiness request = new TokenRequestBusiness {
             client_id = "Test9", client_secret = "Test9"
         };
-        CredentialBusinessEntity client =  new CredentialBusinessEntity {
-             Id = 1, Ident = "Test9", RoleIdent = RoleCredential.Client
+        tinyidp.infrastructure.bdd.Credential client =  new tinyidp.infrastructure.bdd.Credential {
+             Id = 1, Ident = "Test9", RoleIdent = (int)RoleCredential.Client
         };
         bool checkedPwd = false;    
 
@@ -131,8 +131,8 @@ public class TokenClientCredentialTest
         TokenRequestBusiness request = new TokenRequestBusiness {
             client_id = "Test9", client_secret = "Test9"
         };
-        CredentialBusinessEntity client =  new CredentialBusinessEntity {
-             Id = 1, Ident = "Test9", RoleIdent = RoleCredential.Client
+        tinyidp.infrastructure.bdd.Credential client =  new tinyidp.infrastructure.bdd.Credential {
+             Id = 1, Ident = "Test9", RoleIdent = (int)RoleCredential.Client
         };
         bool checkedPwd = false;    
 
@@ -150,8 +150,8 @@ public class TokenClientCredentialTest
         TokenRequestBusiness request = new TokenRequestBusiness {
             client_id = "Test9", client_secret = "Test9"
         };
-        CredentialBusinessEntity client =  new CredentialBusinessEntity {
-             Id = 1, Ident = "Test9", RoleIdent = RoleCredential.Client
+        tinyidp.infrastructure.bdd.Credential client =  new tinyidp.infrastructure.bdd.Credential {
+             Id = 1, Ident = "Test9", RoleIdent = (int)RoleCredential.Client
         };
         bool checkedPwd = true;    
 
@@ -171,8 +171,8 @@ public class TokenClientCredentialTest
         TokenRequestBusiness request = new TokenRequestBusiness {
             client_id = "Test9", client_secret = "VGVzdDg="
         };
-        CredentialBusinessEntity client =  new CredentialBusinessEntity {
-             Id = 1, Ident = "Test9", RoleIdent = RoleCredential.Client
+        tinyidp.infrastructure.bdd.Credential client =  new tinyidp.infrastructure.bdd.Credential {
+             Id = 1, Ident = "Test9", RoleIdent = (int)RoleCredential.Client
         };
         bool checkedPwd = true;    
 
@@ -192,8 +192,8 @@ public class TokenClientCredentialTest
         TokenRequestBusiness request = new TokenRequestBusiness {
             client_id = "Test9", client_secret = "VGVzdDk="
         };
-        CredentialBusinessEntity client =  new CredentialBusinessEntity {
-             Id = 1, Ident = "Test9", RoleIdent = RoleCredential.Client
+        tinyidp.infrastructure.bdd.Credential client =  new tinyidp.infrastructure.bdd.Credential {
+             Id = 1, Ident = "Test9", RoleIdent = (int)RoleCredential.Client
         };
         bool checkedPwd = true;
         _credentialBusinessMock.Setup(x => x.CheckPassword(It.IsAny<string>(), It.IsAny<string>())).Returns(true);    

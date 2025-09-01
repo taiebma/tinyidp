@@ -148,12 +148,12 @@ public class KeysManagmentTest
     [Fact]
     public void GenerateJWTToken_ValidKey_ReturnOk()
     {
-        List<string> scopes = new List<string> { "scope1", "scope2"};
-        List<string> audience = new List<string> { "aud1", "aud2"};
+        List<string> scopes =  new List<string> { "scope1", "scope2" };
+        List<string> audience = new List<string> { "aud1", "aud2" };
         string sub = "ns1:my-identity";
         long lifeTime = 3600;
 
-        string token = _keysManagment.GenerateJWTToken(AlgoKeyType.ES256, scopes, audience, sub, lifeTime);
+        string token = _keysManagment.GenerateJWTToken(AlgoKeyType.ES256, scopes, audience, sub, lifeTime, null);
 
         JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
         JwtSecurityToken jwtSecurityToken = handler.ReadJwtToken(token);
@@ -169,12 +169,12 @@ public class KeysManagmentTest
     [Fact]
     public void GenerateJWTToken_NoValidKey_ReturnOk()
     {
-        List<string> scopes = new List<string> { "scope1", "scope2"};
-        List<string> audience = new List<string> { "aud1", "aud2"};
+        List<string> scopes = new List<string> { "scope1", "scope2" };
+        List<string> audience = new List<string> { "aud1", "aud2" };
         string sub = "ns1:my-identity";
         long lifeTime = 3600;
 
-        Assert.Throws<TinyidpKeyException>(() =>  _keysManagment.GenerateJWTToken(AlgoKeyType.RS256, scopes, audience, sub, lifeTime));
+        Assert.Throws<TinyidpKeyException>(() =>  _keysManagment.GenerateJWTToken(AlgoKeyType.RS256, scopes, audience, sub, lifeTime, null));
 
     }
 }
