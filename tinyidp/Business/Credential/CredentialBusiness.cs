@@ -282,7 +282,7 @@ public class CredentialBusiness : ICredentialBusiness
         {
             if (!string.IsNullOrEmpty(scope))
             {
-                var allClientScopes = clientResp.AllowedScopes.Concat(TokenService.SupportedScopes);
+                var allClientScopes = clientResp.AllowedScopes.Concat(TokenService.SupportedScopes).ToList();
                 var tabScope = scope.Split(' ').ToList();
                 if (tabScope.Where(p => !allClientScopes.Contains(p)).ToList().Count() > 0)
                 {

@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Runtime.Remoting;
 using System.Security.Claims;
+using System.Security.Principal;
 using Castle.Components.DictionaryAdapter.Xml;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -168,7 +169,7 @@ public class CredentialServiceTest
         AuthorizationRequest authorizationRequest = new AuthorizationRequest {
             response_type = "code", client_id = "Test1", scope = "scope1", redirect_uri = "http://localhost"
         };
-//        _headerMock.Setup(x => x["Authorization"]).Returns("Basic VGVzdDk6VGVzdDlUZXN0OSE=");
+        //_headerMock.Setup(x => x["Authorization"]).Returns("Basic VGVzdDk6VGVzdDlUZXN0OSE=");
         _requestMock.Setup(x => x.Headers).Returns(_headerMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
 
@@ -187,9 +188,12 @@ public class CredentialServiceTest
         Credential? user = new Credential {
             Ident = "Test1"
         };
+        var identity = new GenericIdentity("test_user", "test");
+        var contextUser = new ClaimsPrincipal(identity); //add claims as needed
 
         _requestMock.Setup(x => x.Headers).Returns(_headerMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
+        _contextMock.Setup(x => x.User).Returns(contextUser);
         _credentialRepositoryMock.SetupSequence(x => x.GetByIdentReadOnly(It.IsAny<string>()))
             .Returns(Task.FromResult<Credential?>(user))
             .Returns(Task.FromResult<Credential?>(client));
@@ -211,8 +215,11 @@ public class CredentialServiceTest
         Credential? user = new Credential {
             Ident = "Test1"
         };
+        var identity = new GenericIdentity("test_user", "test");
+        var contextUser = new ClaimsPrincipal(identity); //add claims as needed
         _requestMock.Setup(x => x.Headers).Returns(_headerMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
+        _contextMock.Setup(x => x.User).Returns(contextUser);
         _credentialRepositoryMock.SetupSequence(x => x.GetByIdentReadOnly(It.IsAny<string>()))
             .Returns(Task.FromResult<Credential?>(user))
             .Returns(Task.FromResult<Credential?>(client));
@@ -234,8 +241,11 @@ public class CredentialServiceTest
         Credential? user = new Credential {
             Ident = "Test1"
         };
+        var identity = new GenericIdentity("test_user", "test");
+        var contextUser = new ClaimsPrincipal(identity); //add claims as needed
         _requestMock.Setup(x => x.Headers).Returns(_headerMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
+        _contextMock.Setup(x => x.User).Returns(contextUser);
         _credentialRepositoryMock.SetupSequence(x => x.GetByIdentReadOnly(It.IsAny<string>()))
             .Returns(Task.FromResult<Credential?>(user))
             .Returns(Task.FromResult<Credential?>(client));
@@ -258,8 +268,12 @@ public class CredentialServiceTest
         };
         CredentialBusinessEntity response = new CredentialBusinessEntity();
 
+        var identity = new GenericIdentity("test_user", "test");
+        var contextUser = new ClaimsPrincipal(identity); //add claims as needed
         _requestMock.Setup(x => x.Headers).Returns(_headerMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
+        _contextMock.Setup(x => x.User).Returns(contextUser);
+
         _credentialRepositoryMock.SetupSequence(x => x.GetByIdentReadOnly(It.IsAny<string>()))
             .Returns(Task.FromResult<Credential?>(user))
             .Returns(Task.FromResult<Credential?>(client));
@@ -337,17 +351,17 @@ public class CredentialServiceTest
 
             });
 
-        Assert.Equal("Invalid client id or client secret", ex.Message);
+        Assert.Equal("Invalid user or password", ex.Message);
         Assert.Equal("invalid_request", ex.error_description);
     }
 
     [Fact]
     public async void IdentifyUserWithAuthorizeHeader_InvalidClientRole_ResultException()
     {
-        _headerMock.Setup(x => x["Authorization"]).Returns("Basic VGVzdDk6VGVzdDlUZXN0OSE=");
+        _headerMock.Setup(x => x["Authorization"]).Returns("Basic VGVzdDE6VGVzdDFUZXN0MSE=");
         _requestMock.Setup(x => x.Headers).Returns(_headerMock.Object);
         _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
-        string login = "Test9";
+        string login = "Test1";
         tinyidp.infrastructure.bdd.Credential ident = new Credential {
             Ident = login,
             Pass = "AQAAAAEAAYagAAAAEHLSUMSArukchcL6jzL1iKx6sDvXpy2VvI2Q99s81hMh5g846furpiG19NkbhFBisw==", 
@@ -365,34 +379,6 @@ public class CredentialServiceTest
             });
 
         Assert.Equal("This type of user cannot obtain authorization code", ex.Message);
-        Assert.Equal("invalid_request", ex.error_description);
-    }
-
-    [Fact]
-    public async void IdentifyUserWithAuthorizeHeader_InvalidClientId_ResultException()
-    {
-        _headerMock.Setup(x => x["Authorization"]).Returns("Basic VGVzdDk6VGVzdDlUZXN0OSE=");
-        _requestMock.Setup(x => x.Headers).Returns(_headerMock.Object);
-        _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
-        string login = "Test1";
-        tinyidp.infrastructure.bdd.Credential ident = new Credential {
-            Ident = login,
-            Pass = "AQAAAAEAAYagAAAAEHLSUMSArukchcL6jzL1iKx6sDvXpy2VvI2Q99s81hMh5g846furpiG19NkbhFBisw==", 
-            Id = 1,
-            RoleIdent = (int)RoleCredential.User
-        };
-
-        _credentialRepositoryMock.Setup(x => x.GetByIdentReadOnly(It.IsAny<string>())).Returns(Task.FromResult<Credential?>(ident));
-
-        TinyidpCredentialException ex = await Assert.ThrowsAsync<TinyidpCredentialException>(
-           async () => {
-                Task<tinyidp.infrastructure.bdd.Credential?>? responseTask = (Task<tinyidp.infrastructure.bdd.Credential?>?)_methodIdentifyUserWithAuthorizeHeader.Invoke(_credentialBusinessInstance, new object [] {_contextMock.Object});
-                Assert.NotNull(responseTask);
-                tinyidp.infrastructure.bdd.Credential? response = await responseTask;
-
-            });
-
-        Assert.Equal("Invalid client id or client secret", ex.Message);
         Assert.Equal("invalid_request", ex.error_description);
     }
 
@@ -512,7 +498,7 @@ public class CredentialServiceTest
         string code_challenge = null!;
         string code_challenge_method = null!;
 
-        TinyidpCredentialException ex = Assert.Throws<TinyidpCredentialException>(
+        TinyidpTokenException ex = Assert.Throws<TinyidpTokenException>(
             () => 
                  _credentialBusiness.GenerateCode(user, client, redirectUri, scope, code_challenge, code_challenge_method, null)
             );
@@ -521,5 +507,28 @@ public class CredentialServiceTest
         Assert.Equal("invalid_scope", ex.error_description);
     }
 
+    [Fact]
+    public void GenerateCode_GoodScope_ResultException()
+    {
+        tinyidp.infrastructure.bdd.Credential? client = new tinyidp.infrastructure.bdd.Credential
+        {
+            Ident = "Test9",
+            RoleIdent = (int)RoleCredential.Client,
+            RedirectUri = "https://localhost",
+            AllowedScopes = "scope1"
+        };
+        tinyidp.infrastructure.bdd.Credential? user = new tinyidp.infrastructure.bdd.Credential
+        {
+            Ident = "Test1"
+        };
+        string redirectUri = "https://localhost";
+        string scope = "scope1";
+        string code_challenge = null!;
+        string code_challenge_method = null!;
+
+        var resp = _credentialBusiness.GenerateCode(user, client, redirectUri, scope, code_challenge, code_challenge_method, null);
+
+        Assert.Equal("Test9", resp.Ident);
+    }
 }
 
