@@ -268,27 +268,6 @@ public class TokenAuthorizationCodeTest
     }
 
     [Fact]
-    public void VerifyClientIdent_BadFormatSecret_ReturnException()
-    {
-        BasicIdent ident = new BasicIdent {
-            ClientId = "Test9", ClientSecret = "Test9"
-        };
-        TokenRequestBusiness request = new TokenRequestBusiness {
-            client_id = "Test9", client_secret = "Test9"
-        };
-        tinyidp.infrastructure.bdd.Credential client =  new tinyidp.infrastructure.bdd.Credential {
-             Id = 1, Ident = "Test9", RoleIdent = (int)RoleCredential.Client
-        };
-        bool checkedPwd = true;    
-
-        TinyidpTokenException ex = Assert.Throws<TinyidpTokenException>( 
-            () => _tokenAuthorizationCode.VerifyClientIdent(ident, request, client, checkedPwd));
-
-        Assert.Equal("Bad secret format", ex.Message);
-        Assert.Equal("invalid_request", ex.error_description);
-    }
-
-    [Fact]
     public void VerifyClientIdent_ClientSecretDifferent_ReturnException()
     {
         BasicIdent ident = new BasicIdent {

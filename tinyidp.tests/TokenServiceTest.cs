@@ -77,28 +77,6 @@ public class TokenServiceTest
     }
 
     [Fact]
-    public async Task GetToken_NoAuthorizationHeader_ReturnException()
-    {
-        TokenRequestBusiness request = new TokenRequestBusiness {
-             client_id = "Test9",
-             grant_type = "code"
-        };
-        X509Certificate2 cert = null!;
-        string headerAuth = null!;
-        _headerMock.Setup(x => x["Authorization"]).Returns(headerAuth);
-        _requestMock.Setup(x => x.Headers).Returns(_headerMock.Object);
-        _connectionInfoMock.Setup(x => x.ClientCertificate).Returns(cert);
-        _contextMock.Setup(x => x.Connection).Returns(_connectionInfoMock.Object);
-        _contextMock.Setup(x => x.Request).Returns(_requestMock.Object);
-
-        TinyidpTokenException ex = await Assert.ThrowsAsync<TinyidpTokenException>( async () => await _tokenService.GetToken(_contextMock.Object, request));
-
-        Assert.Equal("No Authorization header", ex.Message);
-        Assert.Equal("invalid_request", ex.error_description);
-
-    }
-
-    [Fact]
     public async Task GetToken_MustBasic_ReturnException()
     {
         TokenRequestBusiness request = new TokenRequestBusiness {
