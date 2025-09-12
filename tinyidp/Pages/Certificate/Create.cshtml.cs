@@ -67,7 +67,7 @@ public class CreateModel : PageModel
         {
             using MemoryStream memoryStream = new MemoryStream();
             files.First().CopyToAsync(memoryStream);
-            X509Certificate2 cert = new X509Certificate2(memoryStream.ToArray());
+            X509Certificate2 cert = X509CertificateLoader.LoadCertificate(memoryStream.ToArray());
             _credentialCreate.Dn = cert.Subject;
             DateTime.TryParse(cert.GetExpirationDateString(), out DateTime resultDateExp);
             _credentialCreate.ValidityDate = resultDateExp;

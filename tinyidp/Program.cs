@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using tinyidp.Business.Certificate;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.EntityFrameworkCore;
+using tinyidp.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +30,7 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddSession();
-builder.Services.AddControllers().AddNewtonsoftJson();
+//builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -47,8 +49,20 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToFolder("/Login");
 });
 
-builder.Services.AddDbContext<TinyidpContext>(options =>
+builder.Services.AddDbContextPool<TinyidpContext>(options =>
 {
+    BddConfig? conf = builder.Configuration?.GetSection("TINYIDP_BDDCONFIG").Get<BddConfig>();
+
+    if (conf == null)
+        throw new Exception("No BDD configuration found");
+
+    string connectString = string.Format("Host={0};Database={1};Username={2};Password={3}",
+        conf.ServerName,
+        conf.BddName,
+        conf.UserName,
+        conf.Password
+        );
+    options.UseNpgsql(connectString);
 //    options.EnableSensitiveDataLogging();
 }
 );
@@ -89,6 +103,8 @@ builder.Services.Configure<KestrelServerOptions>(options =>
 
 });
 
+builder.Services.AddOpenApi();
+
 var app = builder.Build();
 
 app.Use((context, next) =>
@@ -124,6 +140,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.MapGet("/oauth/.well-known/openid-configuration", DiscoveryController.GetConfiguration).WithName("WellKnown");
+app.MapGet("/oauth/keys/jwks.json", KeysController.Jwks).WithName("Jwks");
+app.MapPost("/oauth/token", OAuthController.GetToken).WithName("GetToken").DisableAntiforgery();;
+app.MapGet("/oauth/authorize", OAuthController.Authorize).WithName("Authorize");
+app.MapGet("/oauth/userinfo", OAuthController.UserInfo).WithName("UserInfo");
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -133,6 +155,7 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 
 app.MapRazorPages();
 

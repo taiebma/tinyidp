@@ -8,23 +8,10 @@ using tinyidp.infrastructure.keysmanagment;
 
 namespace tinyidp.Controllers;
 
-[ApiController]
-[Route("oauth")]
-public class KeysController: Controller
+public class KeysController
 {
-    private readonly ILogger _logger;
-    private readonly IConfiguration _configuration;
-    private readonly IKeysManagment _keyManagment;
 
-    public KeysController(ILogger<KeysController> logger, IConfiguration configuration, IKeysManagment keysManagment)
-    {
-        _logger = logger;
-        _configuration = configuration;
-        _keyManagment = keysManagment;
-    }
-
-   [HttpGet("keys/jwks.json")]
-    public IActionResult Jwks()
+    public static IResult Jwks([FromServices] IKeysManagment _keyManagment)
     {
         List<KidBusinessEntity> kids = _keyManagment.GetActiveKeys();
         KeysResponse resp = new KeysResponse();
@@ -48,6 +35,6 @@ public class KeysController: Controller
                 return webKey;
             }
             ).ToList();
-        return Ok(resp);
+        return Results.Ok(resp);
     }    
 }

@@ -8,21 +8,9 @@ using tinyidp.Controllers.Models;
 
 namespace tinyidp.Controllers;
 
-[Route("oauth")]
-[Produces("application/json")]
-public class DiscoveryController: Controller
+public class DiscoveryController
 {
-    private readonly ILogger _logger;
-    private readonly IConfiguration _configuration;
-
-    public DiscoveryController(ILogger<DiscoveryController> logger, IConfiguration configuration)
-    {
-        _logger = logger;
-        _configuration = configuration;
-    }
-
-    [HttpGet(".well-known/openid-configuration")]
-    public IActionResult GetConfiguration()
+    public static IResult GetConfiguration([FromServices] IConfiguration _configuration)
     {
         string base_idp_url = _configuration.GetSection("TINYIDP_IDP").GetValue<string>("BASE_URL_IDP")??"https://localhost:7034/";
         var response = new DiscoveryResponse
@@ -54,7 +42,7 @@ public class DiscoveryController: Controller
 
         };
 
-        return Json(response);
+        return Results.Json(response);
     }
 
 }

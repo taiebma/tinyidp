@@ -12,27 +12,10 @@ using Microsoft.Net.Http.Headers;
 
 namespace tinyidp.Controllers;
 
-[ApiController]
-[Route("oauth")]
-public class OAuthController : ControllerBase
+public class OAuthController 
 {
-    private readonly ILogger _logger;
-    private readonly IConfiguration _configuration;
-    private readonly ITokenService _tokenService;
-    private readonly ICredentialBusiness _credentialBusiness;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public OAuthController(ILogger<OAuthController> logger, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, ITokenService tokenService, ICredentialBusiness credentialBusiness)
-    {
-        _logger = logger;
-        _configuration = configuration;
-        _tokenService = tokenService;
-        _httpContextAccessor = httpContextAccessor;
-        _credentialBusiness = credentialBusiness;
-    }
-
-    [HttpPost("token")]
-    public async Task<IActionResult> GetToken([FromForm]TokenRequest request)
+    public static async Task<IResult> GetToken([FromForm]TokenRequest request, [FromServices] ITokenService _tokenService, [FromServices] IHttpContextAccessor _httpContextAccessor)
     {
         TokenResponse resp;
 
@@ -46,33 +29,53 @@ public class OAuthController : ControllerBase
             resp = new TokenResponse();
             resp.Error = ex.Message;
             resp.error_description = ex.error_description;
-            return BadRequest(resp);
+            return Results.BadRequest(resp);
         }
         catch(TinyidpKeyException ex)
         {
             resp = new TokenResponse();
             resp.Error = ex.Message;
             resp.error_description = "";
-            return BadRequest(resp);
+            return Results.BadRequest(resp);
         }
         catch(TinyidpCertificateException ex)
         {
             resp = new TokenResponse();
             resp.Error = ex.Message;
             resp.error_description = "";
-            return BadRequest(resp);
+            return Results.BadRequest(resp);
         }
-        return Ok(resp);
+        return Results.Ok(resp);
     }
 
-    [HttpGet("authorize")]
-    public async Task<IActionResult> Authorize([FromQuery]tinyidp.Controllers.Models.AuthorizationRequest request)
+    public static async Task<IResult> Authorize(
+        [FromQuery]string response_type,
+        [FromQuery]string client_id,
+        [FromQuery]string redirect_uri,
+        [FromQuery]string scope,
+        [FromQuery]string state,
+        [FromQuery]string? nonce,
+        [FromQuery]string? code_challenge,
+        [FromQuery]string? code_challenge_method,
+        [FromServices] IHttpContextAccessor _httpContextAccessor, [FromServices] ICredentialBusiness _credentialBusiness)
     {
+        var request = new tinyidp.Controllers.Models.AuthorizationRequest
+        {
+            response_type = response_type,
+            client_id = client_id,
+            redirect_uri = redirect_uri,
+            scope = scope,
+            state = state,
+            nonce = nonce,
+            code_challenge = code_challenge,
+            code_challenge_method = code_challenge_method
+        };
+
         
         if (!(_httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated??false) &&
             _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].Count == 0)
         {
-            return Redirect(String.Format("/Account/Ident?scope={0}&state={1}&nonce={2}&redirect_uri={3}&client_id={4}&code_challenge={5}&code_challenge_method={6}&nonce={7}", 
+            return Results.Redirect(String.Format("/Account/Ident?scope={0}&state={1}&nonce={2}&redirect_uri={3}&client_id={4}&code_challenge={5}&code_challenge_method={6}&nonce={7}", 
                 request.scope, 
                 request.state, 
                 request.nonce,
@@ -91,11 +94,11 @@ public class OAuthController : ControllerBase
         }
         catch(TinyidpCredentialException ex)
         {
-            return BadRequest(ex.Message);
+            return Results.BadRequest(ex.Message);
         }
 
 
-        return Redirect(String.Format("{0}?code={1}&state={2}&nonce={3}&scope={4}", 
+        return Results.Redirect(String.Format("{0}?code={1}&state={2}&nonce={3}&scope={4}", 
             client.RedirectUri,
             client.AuthorizationCode,
             request.state,
@@ -104,24 +107,23 @@ public class OAuthController : ControllerBase
 
     }
 
-    [HttpGet("userinfo")]
-    public IActionResult UserInfo()
+    public static IResult UserInfo([FromServices] IHttpContextAccessor _httpContextAccessor, [FromServices] ICredentialBusiness _credentialBusiness)
     {
         
         if (!(_httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated??false) &&
             _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].Count == 0)
         {
-            return Unauthorized();
+            return Results.Unauthorized();
         }
         
         try
         {
             Business.BusinessEntities.AppUser user = _credentialBusiness.GetUserInfo(_httpContextAccessor.HttpContext);
-            return Ok(user);
+            return Results.Ok(user);
         }
-        catch(TinyidpCredentialException ex)
+        catch(TinyidpCredentialException )
         {
-            return Unauthorized(ex.Message);
+            return Results.Unauthorized();
         }
 
     }
