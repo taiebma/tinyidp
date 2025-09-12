@@ -53,7 +53,7 @@ public class CreateModel : PageModel
         {
             using MemoryStream memoryStream = new MemoryStream();
             files.First().CopyToAsync(memoryStream);
-            X509Certificate2 cert = new X509Certificate2(memoryStream.ToArray());
+            X509Certificate2 cert = X509CertificateLoader.LoadCertificate(memoryStream.ToArray());
 
             DateTime.TryParse(cert.GetExpirationDateString(), out DateTime validityDate);
             _thrustStoreService.AddCaToStore(cert.Subject, cert.Issuer, validityDate, cert);
