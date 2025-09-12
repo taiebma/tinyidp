@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using tinyidp.Business.Certificate;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,8 +48,20 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToFolder("/Login");
 });
 
-builder.Services.AddDbContext<TinyidpContext>(options =>
+builder.Services.AddDbContextPool<TinyidpContext>(options =>
 {
+    BddConfig? conf = builder.Configuration?.GetSection("TINYIDP_BDDCONFIG").Get<BddConfig>();
+
+    if (conf == null)
+        throw new Exception("No BDD configuration found");
+
+    string connectString = string.Format("Host={0};Database={1};Username={2};Password={3}",
+        conf.ServerName,
+        conf.BddName,
+        conf.UserName,
+        conf.Password
+        );
+    options.UseNpgsql(connectString);
 //    options.EnableSensitiveDataLogging();
 }
 );
