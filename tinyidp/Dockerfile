@@ -1,24 +1,35 @@
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+
 WORKDIR /source
+
+ARG TARGETPLATFORM
+ARG TARGETARCH
+ARG BUILDPLATFORM
 
 # copy csproj and restore as distinct layers
 COPY *.csproj .
-RUN dotnet restore
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+    RID=linux-musl-x64 ; \
+    elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+    RID=linux-musl-arm64 ; \
+    elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
+    RID=linux-musl-arm ; \
+    fi \
+    && dotnet restore -a $TARGETARCH -r $RID
 
 # copy and publish app and libraries
 COPY . .
-ARG TARGETPLATFORM
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-    RID=linux-x64 ; \
+    RID=linux-musl-x64 ; \
     elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-    RID=linux-arm64 ; \
+    RID=linux-musl-arm64 ; \
     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
-    RID=linux-arm ; \
+    RID=linux-musl-arm ; \
     fi \
-    && dotnet publish tinyidp.csproj -f net8.0 -c Release -o /app -r $RID --self-contained false
+    && dotnet publish tinyidp.csproj -f net9.0 -c Release -o /app -r $RID --self-contained false
 
 # final stage/image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 WORKDIR /app
 COPY --from=build /app .
 RUN mkdir certs param

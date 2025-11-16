@@ -159,6 +159,6 @@ app.UseAntiforgery();
 
 app.MapRazorPages();
 
-app.MapControllers();
+//app.MapControllers();
 
 app.Run();
