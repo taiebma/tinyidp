@@ -49,6 +49,9 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToFolder("/Login");
 });
 
+builder.Services.AddResponseCompression();
+builder.Services.AddHealthChecks();
+
 builder.Services.AddDbContextPool<TinyidpContext>(options =>
 {
     BddConfig? conf = builder.Configuration?.GetSection("TINYIDP_BDDCONFIG").Get<BddConfig>();
@@ -145,9 +148,12 @@ app.MapGet("/oauth/keys/jwks.json", KeysController.Jwks).WithName("Jwks");
 app.MapPost("/oauth/token", OAuthController.GetToken).WithName("GetToken").DisableAntiforgery();;
 app.MapGet("/oauth/authorize", OAuthController.Authorize).WithName("Authorize");
 app.MapGet("/oauth/userinfo", OAuthController.UserInfo).WithName("UserInfo");
+app.MapHealthChecks("/health");
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseResponseCompression();
 
 app.UseBasicAuthHttpMiddleware();
 
