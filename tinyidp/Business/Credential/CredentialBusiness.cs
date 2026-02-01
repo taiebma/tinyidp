@@ -32,7 +32,6 @@ public class CredentialBusiness : ICredentialBusiness
     }
     public void AddNewCredential(CredentialBusinessEntity entity)
     {
-//        entity.Pass = BCrypt.Net.BCrypt.EnhancedHashPassword(entity.Pass, 13);
         entity.Pass = _hashedPasswordPbkbf2.GetHashedPasswordPbkbf2(entity.Pass);
         _credentialRepository.Add(entity.ToEntity());
     }
@@ -93,7 +92,6 @@ public class CredentialBusiness : ICredentialBusiness
     {
         if (!entity.PassNew.Equals(entity.Pass))
             entity.Pass = _hashedPasswordPbkbf2.GetHashedPasswordPbkbf2(entity.PassNew);
-//            entity.Pass = BCrypt.Net.BCrypt.EnhancedHashPassword(entity.PassNew, 13);
         _credentialRepository.Update(entity.ToEntity());
         _credentialRepository.SaveChanges();
    }
@@ -123,7 +121,6 @@ public class CredentialBusiness : ICredentialBusiness
         bool result;
         try
         {
-//            result = BCrypt.Net.BCrypt.EnhancedVerify(pass, entity.Pass);
             result = _hashedPasswordPbkbf2.VerifyHashedPasswordPbkbf2(entity.Pass, pass);
         }
         catch (Exception ex)
@@ -138,7 +135,6 @@ public class CredentialBusiness : ICredentialBusiness
         bool result;
         try
         {
-//            result = BCrypt.Net.BCrypt.EnhancedVerify(pass, entity.Pass);
             result = _hashedPasswordPbkbf2.VerifyHashedPasswordPbkbf2(entityPass, pass);
         }
         catch (Exception ex)
