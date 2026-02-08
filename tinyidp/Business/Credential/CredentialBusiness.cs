@@ -93,12 +93,12 @@ public class CredentialBusiness : ICredentialBusiness
         if (!entity.PassNew.Equals(entity.Pass))
             entity.Pass = _hashedPasswordPbkbf2.GetHashedPasswordPbkbf2(entity.PassNew);
         _credentialRepository.Update(entity.ToEntity());
-        _credentialRepository.SaveChanges();
+        _credentialRepository.SaveChanges().Wait();
    }
 
     public void UpdateEntity(infrastructure.bdd.Credential entity)
     {
-        _credentialRepository.SaveChanges();
+        _credentialRepository.SaveChanges().Wait();
    }
 
     public void Remove(CredentialBusinessEntity entity)
@@ -188,7 +188,7 @@ public class CredentialBusiness : ICredentialBusiness
             request.code_challenge, 
             request.code_challenge_method,
             request.nonce);
-        _credentialRepository.SaveChanges();
+        _credentialRepository.SaveChanges().Wait();
         return clientResp;
     }
 

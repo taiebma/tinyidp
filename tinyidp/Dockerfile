@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 
 WORKDIR /source
 
@@ -15,7 +15,7 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     RID=linux-musl-arm ; \
     fi \
-    && dotnet restore -a $TARGETARCH -r $RID
+    && dotnet restore -r $RID
 
 # copy and publish app and libraries
 COPY . .
@@ -26,10 +26,10 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     RID=linux-musl-arm ; \
     fi \
-    && dotnet publish tinyidp.csproj -f net9.0 -c Release -o /app -r $RID --self-contained false
+    && dotnet publish tinyidp.csproj -f net10.0 -c Release -o /app -r $RID --self-contained false
 
 # final stage/image
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
 WORKDIR /app
 COPY --from=build /app .
 RUN mkdir certs param

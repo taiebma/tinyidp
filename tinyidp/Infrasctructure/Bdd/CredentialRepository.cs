@@ -115,8 +115,8 @@ public class CredentialRepository : ICredentialRepository
             .FirstOrDefaultAsync();
     }
 
-    public void SaveChanges()
+    public async Task<int> SaveChanges()
     {
-        _tinyidpContext.SaveChanges();
+        return await _tinyidpContext.SaveChangesAsync();
     }
 }

@@ -50,7 +50,7 @@ public class KeysManagment : IKeysManagment
             {
                 _listKeys = kids.Result.Select(p => p.ToBusiness(_encryptionService)).ToList();
             }
-            _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
+            _memoryCache.Set("keys", _listKeys, DateTime.Now.AddHours(1));
         }
         
     }

@@ -19,5 +19,5 @@ public interface ICredentialRepository
     public Task<List<Credential>> SearchByState(int state );
     public Task<List<Credential>> GetAll( );
     public Task<Credential?> GetCredentialByCertificate(string serial, string issuer);
-    public void SaveChanges();
+    public Task<int> SaveChanges();
 }
