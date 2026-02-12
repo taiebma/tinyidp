@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +7,9 @@ namespace tinyidp.infrastructure.bdd;
 public class CredentialRepository : ICredentialRepository
 {
     private readonly TinyidpContext _tinyidpContext;
+    private readonly ICacheTinyidp<Credential> _cache;
+    private readonly BackgroundSaveDB _backgroundSaveDB;
+
     private static readonly Func<TinyidpContext, string, Task<Credential?>> _getByIdent =
         EF.CompileAsyncQuery((TinyidpContext context, string ident) =>
             context.Credentials.Where(u => u.Ident == ident).FirstOrDefault());
@@ -19,25 +23,30 @@ public class CredentialRepository : ICredentialRepository
             EF.CompileAsyncQuery((TinyidpContext context,  string token) =>
             context.Credentials.Where(u => u.RefreshToken == token).AsNoTracking().FirstOrDefault());
 
-    public CredentialRepository( TinyidpContext tinyidpContext)
+    public CredentialRepository( TinyidpContext tinyidpContext, ICacheTinyidp<Credential> cache, BackgroundSaveDB backgroundSaveDB)
     {
         _tinyidpContext = tinyidpContext;
+        _cache = cache;
+        _backgroundSaveDB = backgroundSaveDB;
     }
 
     public void Add(Credential credential)
     {
+        _cache.Set(credential.Ident, credential);
         _tinyidpContext.Credentials.Add(credential);
         _tinyidpContext.SaveChanges();
     }
 
     public void Remove(Credential credential)
     {
+        _cache.Remove(credential.Ident);
         _tinyidpContext.Credentials.Remove(credential);
         _tinyidpContext.SaveChanges();
     }
 
     public void Update(Credential credential)
     {
+        _cache.Set(credential.Ident, credential);
         _tinyidpContext.Credentials.Update(credential);
     }
 
@@ -48,9 +57,15 @@ public class CredentialRepository : ICredentialRepository
             .FirstOrDefault();
     }
 
-    public Task<Credential?> GetByIdent(string ident)
+    public Credential? GetByIdent(string ident)
     {
-        return _getByIdent(_tinyidpContext, ident);
+        var cached = _cache.Get(ident);
+        if (cached != null)
+        {
+            _tinyidpContext.Credentials.Attach(cached);
+            return cached;
+        }
+        return _getByIdent(_tinyidpContext, ident).Result;
     }
 
     public Credential? GetByIdReadOnly(int id)
@@ -118,5 +133,18 @@ public class CredentialRepository : ICredentialRepository
     public async Task<int> SaveChanges()
     {
         return await _tinyidpContext.SaveChangesAsync();
+    }
+
+    public void DeferredSaveChanges()
+    {
+        _tinyidpContext.ChangeTracker.Entries<Credential>()
+            .Where(e => e.State == EntityState.Modified)
+            .ToList()
+            .ForEach(e => {
+                var cred = e.Entity.Clone();
+                _cache.Set(e.Entity.Ident, cred);
+                _backgroundSaveDB.EnqueueAsync(cred).GetAwaiter().GetResult();
+                e.State = EntityState.Unchanged; // Empêche EF de faire le update immédiatement
+            });
     }
 }

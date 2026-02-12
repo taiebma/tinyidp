@@ -9,7 +9,7 @@ public interface ICredentialRepository
     public void Remove(Credential Credential);
     public void Update(Credential Credential);
     public Credential? GetById(int id);
-    public Task<Credential?> GetByIdent(string ident);
+    public Credential? GetByIdent(string ident);
     public Credential? GetByIdReadOnly(int id);
     public Credential? GetWithCertificates(int id);
     public Task<Credential?> GetByIdentReadOnly(string ident);
@@ -20,4 +20,5 @@ public interface ICredentialRepository
     public Task<List<Credential>> GetAll( );
     public Task<Credential?> GetCredentialByCertificate(string serial, string issuer);
     public Task<int> SaveChanges();
+    public void DeferredSaveChanges();
 }

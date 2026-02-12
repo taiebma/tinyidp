@@ -56,7 +56,7 @@ public class CredentialBusiness : ICredentialBusiness
 
     public async Task<infrastructure.bdd.Credential?> GetByIdent(string ident)
     {
-        var result = await _credentialRepository.GetByIdent(ident);
+        var result = _credentialRepository.GetByIdent(ident);
         return result;
     }
 
@@ -98,7 +98,7 @@ public class CredentialBusiness : ICredentialBusiness
 
     public void UpdateEntity(infrastructure.bdd.Credential entity)
     {
-        _credentialRepository.SaveChanges().Wait();
+        _credentialRepository.DeferredSaveChanges();
    }
 
     public void Remove(CredentialBusinessEntity entity)
@@ -188,7 +188,7 @@ public class CredentialBusiness : ICredentialBusiness
             request.code_challenge, 
             request.code_challenge_method,
             request.nonce);
-        _credentialRepository.SaveChanges().Wait();
+        _credentialRepository.DeferredSaveChanges();
         return clientResp;
     }
 

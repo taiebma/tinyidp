@@ -12,6 +12,7 @@ using tinyidp.Business.Certificate;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
 using tinyidp.Controllers;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,7 +52,7 @@ builder.Services.AddRazorPages(options =>
 builder.Services.AddResponseCompression();
 builder.Services.AddHealthChecks();
 
-builder.Services.AddDbContextPool<TinyidpContext>(options =>
+builder.Services.AddDbContextPool<TinyidpContext>((serviceProvider, options) =>
 {
     BddConfig? conf = builder.Configuration?.GetSection("TINYIDP_BDDCONFIG").Get<BddConfig>();
 
@@ -65,17 +66,30 @@ builder.Services.AddDbContextPool<TinyidpContext>(options =>
         conf.Password
         );
     options.UseNpgsql(connectString);
-//    options.EnableSensitiveDataLogging();
+    options.LogTo(
+        Console.WriteLine,  // Ou utilise un ILogger
+        new[] { DbLoggerCategory.Database.Command.Name },
+        LogLevel.Information,
+        DbContextLoggerOptions.SingleLine | DbContextLoggerOptions.UtcTime
+    );
+    options.EnableSensitiveDataLogging();
 }
 );
 
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
-// Repo
+// Infrastructure
 builder.Services.AddScoped<ICredentialRepository, CredentialRepository>();
 builder.Services.AddScoped<ICertificateRepository, CertificateRepository>();
 builder.Services.AddScoped<IKidRepository, KidRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddSingleton<ICacheTinyidp<Credential>, MemoryCacheTinyidp<Credential>>();
+builder.Services.AddScoped<IMemoryCache, MemoryCache>();
+builder.Services.AddSingleton<BackgroundSaveDB>();
+builder.Services.AddSingleton<IQueueSaveDB<Credential>>(sp => 
+    sp.GetRequiredService<BackgroundSaveDB>());
+builder.Services.AddHostedService(sp => 
+    sp.GetRequiredService<BackgroundSaveDB>());
 
 //Business
 builder.Services.AddScoped<ICredentialBusiness, CredentialBusiness>();
@@ -108,6 +122,9 @@ builder.Services.Configure<KestrelServerOptions>(options =>
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+Console.WriteLine($"=== ENVIRONMENT: {app.Environment.EnvironmentName} ===");
+Console.WriteLine($"=== IS DEVELOPMENT: {app.Environment.IsDevelopment()} ===");
 
 app.Use((context, next) =>
 {

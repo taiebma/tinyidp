@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace tinyidp.infrastructure.bdd;
 
-public partial class Credential
+public partial class Credential: ICachable
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -52,4 +52,45 @@ public partial class Credential
     public ICollection<Certificate> Certificates{ get; set; } = null!;
     public string? Nonce { get; set; } = null!;
     public string? Scoped { get; set; } = null!;
+
+    public DateTime? Expiration 
+    { 
+        get
+        {
+            if (CreationDateRefreshToken.HasValue)
+            {
+                return CreationDateRefreshToken.Value.AddMinutes(RefreshMaxMinuteValidity);
+            }
+            return CreationDate.AddMinutes(TokenMaxMinuteValidity);
+        } 
+    }
+
+    public Credential Clone()
+    {
+        return new Credential
+        {
+            Id = this.Id,
+            Ident = this.Ident,
+            Pass = this.Pass,
+            State = this.State,
+            CreationDate = this.CreationDate,
+            LastIdent = this.LastIdent,
+            RoleIdent = this.RoleIdent,
+            NbMaxRenew = this.NbMaxRenew,
+            TokenMaxMinuteValidity = this.TokenMaxMinuteValidity,
+            RefreshMaxMinuteValidity = this.RefreshMaxMinuteValidity,
+            MustChangePwd = this.MustChangePwd,
+            Audiences = this.Audiences,
+            AllowedScopes = this.AllowedScopes,
+            AuthorizationCode = this.AuthorizationCode,
+            RedirectUri = this.RedirectUri,
+            CodeChallenge = this.CodeChallenge,
+            CodeChallengeMethod = this.CodeChallengeMethod,
+            RefreshToken = this.RefreshToken,
+            CreationDateRefreshToken = this.CreationDateRefreshToken,
+            KeyType = this.KeyType,
+            Nonce = this.Nonce,
+            Scoped = this.Scoped
+        };
+    }
 }
