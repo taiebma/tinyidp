@@ -1,0 +1,47 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components
+@using tinyidp.Components.Shared
+@implements IAsyncDisposable
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+<div class="page">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">TinyIDP</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/credentials">Credentials</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/certificates">Certificats</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/truststore">Trust Store</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/kids">Kids</a>
+                    </li>
+                </ul>
+                <div class="navbar-nav ms-auto">
+                    <LoginDisplay />
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main role="main" class="container mt-4">
+        @Body
+    </main>
+</div>
+
+@code {
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await Task.CompletedTask;
+    }
+}

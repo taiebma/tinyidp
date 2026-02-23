@@ -91,9 +91,9 @@ public static class ModelsExtensions
         };
     }
 
-    public static ChangePwdModel ToModelChPwd(this CredentialBusinessEntity entity)
+    public static tinyidp.Components.Pages.Account.ChangePwd.ChangePwdModel ToModelChPwd(this CredentialBusinessEntity entity)
     {
-        return new ChangePwdModel() {
+        return new tinyidp.Components.Pages.Account.ChangePwd.ChangePwdModel() {
             Id = entity.Id,
             Ident = entity.Ident, 
             Pass = entity.Pass, 

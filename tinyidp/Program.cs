@@ -21,6 +21,7 @@ builder.Configuration
     .AddJsonFile(String.Format("{0}/tinyidp.key", Environment.GetEnvironmentVariable("TINYIDP_SECU__PATH")),  optional: true, reloadOnChange: true);
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("UserInfoPolicy", o =>
@@ -48,6 +49,10 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AuthorizeFolder("/Token");
     options.Conventions.AllowAnonymousToFolder("/Login");
 });
+
+// Blazor Server
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 
 builder.Services.AddResponseCompression();
 builder.Services.AddHealthChecks();
@@ -179,8 +184,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
-app.MapRazorPages();
+app.MapRazorComponents<tinyidp.Components.App>()
+    .AddInteractiveServerRenderMode();
 
-//app.MapControllers();
+app.MapRazorPages();
 
 app.Run();

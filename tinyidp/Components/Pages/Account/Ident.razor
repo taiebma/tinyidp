@@ -1,0 +1,135 @@
+@page "/Account/Ident"
+@using System.ComponentModel.DataAnnotations
+@using System.Web
+@inject NavigationManager Navigation
+@inject ICredentialBusiness CredentialBusiness
+@inject ILogger<Ident> Logger
+
+<PageTitle>Identification - TinyIDP</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Identification</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <form @onsubmit="OnSubmitAsync">
+                        <div class="mb-3">
+                            <label for="login" class="form-label">Identifiant</label>
+                            <input type="text" id="login" class="form-control" @bind="model.Login" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mot de passe</label>
+                            <input type="password" id="password" class="form-control" @bind="model.Password" required />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">Connexion en cours...</span>
+                                }
+                                else
+                                {
+                                    <span>Connexion</span>
+                                }
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Scope { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? State { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Redirect_Uri { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Client_Id { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Code_Challenge { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Code_Challenge_Method { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Nonce { get; set; }
+
+    private LoginModel model = new();
+    private string errorMessage = string.Empty;
+    private bool isSubmitting = false;
+
+    private class LoginModel
+    {
+        [Required(ErrorMessage = "L'identifiant est obligatoire")]
+        public string Login { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Le mot de passe est obligatoire")]
+        public string Password { get; set; } = string.Empty;
+
+        public string? ExceptionMessage { get; set; }
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        errorMessage = string.Empty;
+        isSubmitting = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(model.Login) || string.IsNullOrWhiteSpace(model.Password))
+            {
+                errorMessage = "L'identifiant et le mot de passe sont obligatoires.";
+                return;
+            }
+
+            if (!(await CredentialBusiness.VerifyPassword(model.Login, model.Password)))
+            {
+                errorMessage = "Identifiant ou mot de passe invalide";
+                return;
+            }
+
+            CredentialBusinessEntity? user = await CredentialBusiness.GetByIdent(model.Login).ToBusinessAsync();
+            if (user == null)
+            {
+                errorMessage = "L'utilisateur n'existe pas";
+                return;
+            }
+
+            CredentialBusiness.CreateIdentityCooky(user, null);
+
+            string url = string.Format("/oauth/authorize?response_type=code&redirect_uri={0}&scope={1}&state={2}&client_id={3}&code_challenge={4}&code_challenge_method={5}&nonce={6}",
+                HttpUtility.UrlEncode(Redirect_Uri), Scope, State, Client_Id, Code_Challenge, Code_Challenge_Method, Nonce ?? "");
+
+            Navigation.NavigateTo(url, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur : {ex.Message}";
+            Logger.LogError(ex, "Erreur lors de l'identification");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

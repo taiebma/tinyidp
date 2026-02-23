@@ -1,0 +1,145 @@
+@page "/Account/ChangePwd"
+@using System.ComponentModel.DataAnnotations
+@using tinyidp.Pages.Models
+@inject NavigationManager Navigation
+@inject ICredentialBusiness CredentialBusiness
+@inject ILogger<ChangePwd> Logger
+
+@inherits LayoutComponentBase
+
+<PageTitle>Changer le mot de passe - TinyIDP</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Changer le mot de passe</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <form @onsubmit="OnSubmitAsync">
+                        <div class="mb-3">
+                            <label for="ident" class="form-label">Identifiant</label>
+                            <input type="text" id="ident" class="form-control" value="@model?.Ident" disabled />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Nouveau mot de passe</label>
+                            <input type="password" id="password" class="form-control" @bind="model.PassNew" required />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">Changement en cours...</span>
+                                }
+                                else
+                                {
+                                    <span>Changer le mot de passe</span>
+                                }
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Ident { get; set; }
+
+    private ChangePwdModel model = new();
+    private string errorMessage = string.Empty;
+    private bool isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(Ident))
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        try
+        {
+            CredentialBusinessEntity? user;
+            if (int.TryParse(Ident, out int id))
+            {
+                user = CredentialBusiness.Get(id).ToBusiness();
+            }
+            else
+            {
+                user = await CredentialBusiness.GetByIdent(Ident).ToBusinessAsync();
+            }
+
+            if (user == null || !user.MustChangePwd)
+            {
+                Navigation.NavigateTo("/");
+                return;
+            }
+
+            model = user.ToModelChPwd();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur : {ex.Message}";
+        }
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        errorMessage = string.Empty;
+        isSubmitting = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(model.PassNew))
+            {
+                errorMessage = "Le nouveau mot de passe est obligatoire.";
+                return;
+            }
+
+            var user = CredentialBusiness.Get(model.Id).ToBusiness();
+            if (!user.MustChangePwd)
+            {
+                errorMessage = "Vous n'avez pas les droits pour effectuer cette action.";
+                return;
+            }
+
+            user.Pass = "";
+            user.PassNew = model.PassNew;
+            user.MustChangePwd = false;
+            CredentialBusiness.Update(user);
+
+            Navigation.NavigateTo("/account/login", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur : {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    public class ChangePwdModel
+    {
+        public int Id { get; set; }
+        public string? Ident { get; set; }
+        public string? Pass { get; set; }
+        [Required(ErrorMessage = "Le nouveau mot de passe est obligatoire")]
+        public string PassNew { get; set; } = string.Empty;
+        public string? ExceptionMessage { get; set; }
+    }
+}

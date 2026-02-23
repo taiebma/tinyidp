@@ -1,0 +1,19 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TinyIDP</title>
+    <base href="/" />
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+    <CascadingAuthenticationState>
+        <Routes />
+    </CascadingAuthenticationState>
+    <script src="_framework/blazor.web.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+@page "/Account/SignedOut"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject NavigationManager Navigation
+@inject IHttpContextAccessor HttpContextAccessor
+
+<PageTitle>Déconnexion - TinyIDP</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Déconnexion</h3>
+                </div>
+                <div class="card-body">
+                    <p class="alert alert-success">
+                        Vous avez été déconnecté avec succès.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="/" class="btn btn-primary">Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var httpContext = HttpContextAccessor?.HttpContext;
+        if (httpContext?.User?.Identity?.IsAuthenticated ?? false)
+        {
+            await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        }
+    }
+}

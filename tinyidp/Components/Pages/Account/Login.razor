@@ -1,0 +1,127 @@
+@page "/account/login"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Antiforgery
+@inject NavigationManager Navigation
+@inject HttpClient Http
+@inject IAntiforgery Antiforgery
+@inject IHttpContextAccessor HttpContextAccessor
+
+<PageTitle>Connexion - TinyIDP</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Connexion</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <form method="post" @formname="loginForm" @onsubmit="OnSubmitAsync">
+                        <AntiforgeryToken />
+                        <div class="mb-3">
+                            <label for="login" class="form-label">Identifiant</label>
+                            <InputText type="text" class="form-control" @bind-value="model!.Login" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mot de passe</label>
+                            <InputText type="password" class="form-control" @bind-value="model!.Password" required />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">Connexion en cours...</span>
+                                    
+                                }
+                                else
+                                {
+                                    <span>Connexion</span>
+                                }
+                            </button>
+                        </div>
+
+                        <div class="mt-3">
+                            <a href="/Account/ChangePwd" class="link-secondary">
+                                Changer le mot de passe
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private LoginModel? model { get; set; }
+
+    private string errorMessage = string.Empty;
+    private bool isSubmitting = false;
+
+    protected override void OnInitialized()
+    {
+        model ??= new LoginModel();
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        if (model == null)
+            return;
+
+        errorMessage = string.Empty;
+        isSubmitting = true;
+
+        if (string.IsNullOrWhiteSpace(model.Login) || string.IsNullOrWhiteSpace(model.Password))
+        {
+            errorMessage = "L'identifiant et le mot de passe sont obligatoires.";
+            isSubmitting = false;
+            return;
+        }
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/auth/login", new 
+            { 
+                login = model.Login, 
+                password = model.Password 
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/", forceLoad: true);
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                errorMessage = content ?? "Erreur lors de la connexion";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Erreur : {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "L'identifiant est obligatoire")]
+        public string? Login { get; set; }
+
+        [Required(ErrorMessage = "Le mot de passe est obligatoire")]
+        public string? Password { get; set; }
+    }
+}

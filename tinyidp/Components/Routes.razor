@@ -1,0 +1,19 @@
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Authorization
+@using tinyidp.Components.Layout
+
+<Router AppAssembly="typeof(App).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)">
+            <NotAuthorized>
+                <p class="alert alert-danger">Vous n'êtes pas autorisé à accéder à cette page. Veuillez <a href="/account/login">vous connecter</a>.</p>
+            </NotAuthorized>
+        </AuthorizeRouteView>
+    </Found>
+    <NotFound>
+        <PageTitle>Non trouvé</PageTitle>
+        <div class="alert alert-warning" role="alert">
+            <p>Désolé, la page que vous avez demandée n'existe pas.</p>
+        </div>
+    </NotFound>
+</Router>
