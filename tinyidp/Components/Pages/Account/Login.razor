@@ -1,10 +1,14 @@
 @page "/account/login"
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Antiforgery
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
 @inject NavigationManager Navigation
-@inject HttpClient Http
 @inject IAntiforgery Antiforgery
+@inject ICredentialBusiness _credentialBusiness;
 @inject IHttpContextAccessor HttpContextAccessor
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Connexion - TinyIDP</PageTitle>
 
@@ -65,6 +69,9 @@
     [SupplyParameterFromForm]
     private LoginModel? model { get; set; }
 
+    [Parameter]
+    public string? returnUrl { get; set; }
+
     private string errorMessage = string.Empty;
     private bool isSubmitting = false;
 
@@ -90,21 +97,40 @@
 
         try
         {
-            var response = await Http.PostAsJsonAsync("/api/auth/login", new 
-            { 
-                login = model.Login, 
-                password = model.Password 
-            });
+            var user = await AuthenticateUser(model.Login, model.Password);
 
-            if (response.IsSuccessStatusCode)
+            if (user == null)
             {
+                errorMessage = "Invalid login attempt.";
+                Navigation.NavigateTo("/", forceLoad: true);
+                return;
+            }
+
+            //  Update last connection
+            user.LastIdent = DateTime.Now;
+            _credentialBusiness.Update(user);
+
+            if (user.RoleIdent != RoleCredential.Admin && user.RoleIdent != RoleCredential.User)
+            {
+                errorMessage = "This type of user cannot logged in";
                 Navigation.NavigateTo("/", forceLoad: true);
             }
-            else
+
+            var claims = new List<Claim>
             {
-                var content = await response.Content.ReadAsStringAsync();
-                errorMessage = content ?? "Erreur lors de la connexion";
-            }
+                new Claim(ClaimTypes.Name, user.Ident),
+                new Claim("FullName", user.Ident),
+                new Claim("Role", user.RoleIdent.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(
+                claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await HttpContextAccessor.HttpContext!.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme, 
+                new ClaimsPrincipal(claimsIdentity));
+
+            Navigation.NavigateTo(uri: returnUrl ?? "/", forceLoad: true);
         }
         catch (Exception ex)
         {
@@ -113,6 +139,20 @@
         finally
         {
             isSubmitting = false;
+        }
+    }
+
+    private async Task<CredentialBusinessEntity?> AuthenticateUser(string login, string password)
+    {
+
+        if (await _credentialBusiness.VerifyPassword(login, password))
+        {
+            CredentialBusinessEntity? ident  = await  _credentialBusiness.GetCredentialBusinessEntityByIdent(login);
+            return ident;
+        }
+        else
+        {
+            return null;
         }
     }
 

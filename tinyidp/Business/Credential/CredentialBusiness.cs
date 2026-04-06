@@ -60,6 +60,12 @@ public class CredentialBusiness : ICredentialBusiness
         return result;
     }
 
+    public async Task<CredentialBusinessEntity?> GetCredentialBusinessEntityByIdent(string ident)
+    {
+        var result = await _credentialRepository.GetByIdentReadOnly(ident);
+        return result?.ToBusiness();
+    }
+
     public async Task<infrastructure.bdd.Credential?> GetByAuthorizationCode(string code)
     {
         var result = await _credentialRepository.GetByAuthorizationCode(code);
@@ -93,7 +99,7 @@ public class CredentialBusiness : ICredentialBusiness
         if (!entity.PassNew.Equals(entity.Pass))
             entity.Pass = _hashedPasswordPbkbf2.GetHashedPasswordPbkbf2(entity.PassNew);
         _credentialRepository.Update(entity.ToEntity());
-        _credentialRepository.SaveChanges().Wait();
+        _credentialRepository.SaveChanges();
    }
 
     public void UpdateEntity(infrastructure.bdd.Credential entity)
@@ -232,6 +238,10 @@ public class CredentialBusiness : ICredentialBusiness
     public async void CreateIdentityCooky(CredentialBusinessEntity user, HttpContext httpContext)
     {
 
+        if (httpContext == null)
+        {
+            throw new TinyidpCredentialException("No http context");
+        }   
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, user.Ident),

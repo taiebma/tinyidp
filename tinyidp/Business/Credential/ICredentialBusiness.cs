@@ -14,6 +14,7 @@ public interface ICredentialBusiness
     public Task<List<CredentialBusinessEntity>> SearchByState(int state);
     public Task<List<CredentialBusinessEntity>> SearchByIdentLike(string ident);
     public Task<infrastructure.bdd.Credential?> GetByIdent(string ident);
+    public  Task<CredentialBusinessEntity?> GetCredentialBusinessEntityByIdent(string ident);
     public Task<infrastructure.bdd.Credential?> GetByAuthorizationCode(string code);
     public Task<infrastructure.bdd.Credential?> GetByRefreshToken(string token);
     public infrastructure.bdd.Credential Get(int id);

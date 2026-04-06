@@ -1,9 +1,12 @@
 @page "/Account/Ident"
 @using System.ComponentModel.DataAnnotations
 @using System.Web
+@using Microsoft.AspNetCore.Antiforgery
 @inject NavigationManager Navigation
 @inject ICredentialBusiness CredentialBusiness
 @inject ILogger<Ident> Logger
+@inject IAntiforgery Antiforgery
+@inject IHttpContextAccessor HttpContextAccessor
 
 <PageTitle>Identification - TinyIDP</PageTitle>
 
@@ -22,15 +25,16 @@
                         </div>
                     }
 
-                    <form @onsubmit="OnSubmitAsync">
+                    <form method="post" @formname="identForm" @onsubmit="OnSubmitAsync">
+                        <AntiforgeryToken />
                         <div class="mb-3">
                             <label for="login" class="form-label">Identifiant</label>
-                            <input type="text" id="login" class="form-control" @bind="model.Login" required />
+                            <InputText type="text" class="form-control" @bind-value="model!.Login" required />
                         </div>
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Mot de passe</label>
-                            <input type="password" id="password" class="form-control" @bind="model.Password" required />
+                            <InputText type="password" class="form-control" @bind-value="model!.Password" required />
                         </div>
 
                         <div class="d-grid gap-2">
@@ -74,7 +78,9 @@
     [SupplyParameterFromQuery]
     public string? Nonce { get; set; }
 
-    private LoginModel model = new();
+    [SupplyParameterFromForm]
+    private LoginModel? model  { get; set; }
+
     private string errorMessage = string.Empty;
     private bool isSubmitting = false;
 
@@ -89,6 +95,11 @@
         public string? ExceptionMessage { get; set; }
     }
 
+    protected override void OnInitialized()
+    {
+        model ??= new LoginModel();
+    }
+
     private async Task OnSubmitAsync()
     {
         errorMessage = string.Empty;
@@ -96,7 +107,7 @@
 
         try
         {
-            if (string.IsNullOrWhiteSpace(model.Login) || string.IsNullOrWhiteSpace(model.Password))
+            if (string.IsNullOrWhiteSpace(model?.Login) || string.IsNullOrWhiteSpace(model.Password))
             {
                 errorMessage = "L'identifiant et le mot de passe sont obligatoires.";
                 return;
@@ -108,19 +119,19 @@
                 return;
             }
 
-            CredentialBusinessEntity? user = await CredentialBusiness.GetByIdent(model.Login).ToBusinessAsync();
+            CredentialBusinessEntity? user = await CredentialBusiness.GetCredentialBusinessEntityByIdent(model.Login);
             if (user == null)
             {
                 errorMessage = "L'utilisateur n'existe pas";
                 return;
             }
 
-            CredentialBusiness.CreateIdentityCooky(user, null);
+            CredentialBusiness.CreateIdentityCooky(user, HttpContextAccessor?.HttpContext);
 
             string url = string.Format("/oauth/authorize?response_type=code&redirect_uri={0}&scope={1}&state={2}&client_id={3}&code_challenge={4}&code_challenge_method={5}&nonce={6}",
                 HttpUtility.UrlEncode(Redirect_Uri), Scope, State, Client_Id, Code_Challenge, Code_Challenge_Method, Nonce ?? "");
 
-            Navigation.NavigateTo(url, forceLoad: true);
+            HttpContextAccessor?.HttpContext?.Response.Redirect(url);
         }
         catch (Exception ex)
         {

@@ -61,7 +61,7 @@ public partial class Credential: ICachable
             {
                 return CreationDateRefreshToken.Value.AddMinutes(RefreshMaxMinuteValidity);
             }
-            return CreationDate.AddMinutes(TokenMaxMinuteValidity);
+            return DateTime.Now.AddMinutes(TokenMaxMinuteValidity > 0 ? TokenMaxMinuteValidity : 15);
         } 
     }
 
