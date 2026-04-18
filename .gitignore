@@ -10,3 +10,5 @@ ssl
 tinyidp.key
 *.nettrace
 *.speedscope.json
+tinyidp/tinyidp.csproj.lscache
+tinyidp.tests/tinyidp.tests.csproj.lscache
