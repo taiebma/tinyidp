@@ -1,0 +1,184 @@
+@page "/certificates/edit/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@using Microsoft.AspNetCore.Components
+@attribute [Authorize]
+@inject ICredentialBusiness CredentialBusiness
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Certificate Management - TinyIDP</PageTitle>
+
+<h1>Certificate Management</h1>
+
+<div id="error">
+    <span class="error">
+        @if (certificateEdit != null && !string.IsNullOrEmpty(certificateEdit.ExceptionMessage))
+        {
+            @certificateEdit.ExceptionMessage
+        }
+    </span>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (certificateEdit != null && certificateEdit.CanAccess && !isLoading)
+{
+    <h3>Edit certificate</h3>
+    <div id="add-block" class="shadowbox">
+        <EditForm Model="certificateEdit" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <table>
+                <tr>
+                    <td>
+                        <label for="Id">Id</label>
+                    </td>
+                    <td>
+                        @certificateEdit.Dn
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="Dn">DN</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            <InputText id="Dn" @bind-Value="certificateEdit.Dn" class="form-control" />
+                            <ValidationMessage For="@(() => certificateEdit.Dn)" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="Issuer">Issuer</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            <InputText id="Issuer" @bind-Value="certificateEdit.Issuer" class="form-control" />
+                            <ValidationMessage For="@(() => certificateEdit.Issuer)" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="Serial">Serial</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            <InputText id="Serial" @bind-Value="certificateEdit.Serial" class="form-control" />
+                            <ValidationMessage For="@(() => certificateEdit.Serial)" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="State">State</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            <InputSelect id="State" @bind-Value="certificateEdit.State" class="form-control">
+                                <option value="">Choose a State</option>
+                                @foreach (var value in Enum.GetValues(typeof(StateCredential)))
+                                {
+                                    <option value="@value">@value</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => certificateEdit.State)" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="ValidityDate">Validity Date</label>
+                    </td>
+                    <td>
+                        @certificateEdit.ValidityDate
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="LastIdent">Last Ident</label>
+                    </td>
+                    <td>
+                        @certificateEdit.LastIdent
+                    </td>
+                </tr>
+            </table>
+
+            <button type="submit" class="btn btn-primary">Modify</button>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private CertificateEditModel? certificateEdit;
+    private CertificateBusinessEntity? resultCertificate;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            resultCertificate = await CredentialBusiness.GetCertificate(Id);
+            
+            if (resultCertificate == null)
+            {
+                certificateEdit = new CertificateEditModel();
+                certificateEdit.Id = Id;
+                certificateEdit.CanAccess = false;
+            }
+            else
+            {
+                certificateEdit = resultCertificate.ToModelEdit();
+
+                if (authState.User.Claims.Role() != RoleCredential.Admin)
+                {
+                    certificateEdit.ExceptionMessage = "You don't have rights to access";
+                    certificateEdit.CanAccess = false;
+                }
+                else
+                {
+                    certificateEdit.CanAccess = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            certificateEdit ??= new CertificateEditModel();
+            certificateEdit.ExceptionMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (certificateEdit != null)
+            {
+                CredentialBusiness.UpdateCertificate(certificateEdit.ToBusiness(resultCertificate));
+                Navigation.NavigateTo($"/credentials/edit/{certificateEdit.IdClient}");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (certificateEdit != null)
+            {
+                certificateEdit.ExceptionMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+        }
+    }
+}

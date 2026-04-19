@@ -1,0 +1,147 @@
+@page "/certificates/create/{IdClient:int}"
+@using Microsoft.AspNetCore.Authorization
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Security.Cryptography.X509Certificates
+@attribute [Authorize]
+@inject ICredentialBusiness CredentialBusiness
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILogger<CertificateCreate> Logger
+
+<PageTitle>Add Certificate - TinyIDP</PageTitle>
+
+<h1>Certificate Management</h1>
+
+<div id="error">
+    <span class="error">
+        @if (certificateCreate != null && !string.IsNullOrEmpty(certificateCreate.ExceptionMessage))
+        {
+            @certificateCreate.ExceptionMessage
+        }
+    </span>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (certificateCreate != null && certificateCreate.CanAccess && !isLoading)
+{
+    <h3>Add certificate</h3>
+
+    <div id="add-block" class="shadowbox">
+        <div>
+            <label for="certificateFile">Select certificate file (.pem, .cer, .crt, .p7b)</label>
+            <InputFile id="certificateFile" OnChange="OnFileSelected" accept=".pem,.cer,.crt,.p7b,.pfx" />
+        </div>
+        @if (selectedFileName != null)
+        {
+            <p>Selected file: @selectedFileName</p>
+        }
+        <button type="button" class="btn btn-primary" disabled="@(isUploading || selectedFile == null)" @onclick="HandleSubmit">
+            @if (isUploading)
+            {
+                <span>Processing...</span>
+            }
+            else
+            {
+                <span>Add</span>
+            }
+        </button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int IdClient { get; set; }
+
+    private CertificateCreateModel? certificateCreate;
+    private IBrowserFile? selectedFile;
+    private string? selectedFileName;
+    private bool isLoading = true;
+    private bool isUploading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            certificateCreate = new CertificateCreateModel();
+            certificateCreate.IdClient = IdClient;
+            
+            if (authState.User.Claims.Role() != RoleCredential.Admin)
+            {
+                certificateCreate.ExceptionMessage = "You don't have rights to access";
+                certificateCreate.CanAccess = false;
+            }
+            else
+            {
+                certificateCreate.CanAccess = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            certificateCreate ??= new CertificateCreateModel();
+            certificateCreate.ExceptionMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.GetMultipleFiles(1).FirstOrDefault();
+        selectedFileName = selectedFile?.Name;
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            isUploading = true;
+            
+            if (selectedFile == null)
+            {
+                if (certificateCreate != null)
+                    certificateCreate.ExceptionMessage = "No file selected";
+                return;
+            }
+
+            if (certificateCreate == null)
+                return;
+
+            using MemoryStream memoryStream = new MemoryStream();
+            await selectedFile.OpenReadStream().CopyToAsync(memoryStream);
+            
+            X509Certificate2 cert = X509CertificateLoader.LoadCertificate(memoryStream.ToArray());
+            
+            certificateCreate.Dn = cert.Subject;
+            DateTime.TryParse(cert.GetExpirationDateString(), out DateTime resultDateExp);
+            certificateCreate.ValidityDate = resultDateExp;
+            certificateCreate.Issuer = cert.Issuer;
+            certificateCreate.Serial = cert.SerialNumber;
+
+            CredentialBusiness.AddNewCertificate(certificateCreate.ToBusiness());
+            
+            Navigation.NavigateTo($"/credentials/edit/{certificateCreate.IdClient}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.Message);
+            if (certificateCreate != null)
+            {
+                certificateCreate.ExceptionMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+}

@@ -258,18 +258,33 @@ public static class ModelsExtensions
         };
     }
 
-    public static CertificateBusinessEntity ToBusiness(this CertificateEditModel certificate)
+    public static CertificateBusinessEntity ToBusiness(this CertificateEditModel certificate, CertificateBusinessEntity? existingEntity = null)
     {
-        return new CertificateBusinessEntity() {
-            Id = certificate.Id, 
-            ValidityDate = certificate.ValidityDate, 
-            LastIdent = certificate.LastIdent, 
-            Dn = certificate.Dn, 
-            Issuer = certificate.Issuer, 
-            Serial = certificate.Serial, 
-            State = (int)certificate.State, 
-            IdClient = certificate.IdClient
-        };
+        if (existingEntity == null)
+        {
+            return new CertificateBusinessEntity() {
+                Id = certificate.Id, 
+                ValidityDate = certificate.ValidityDate, 
+                LastIdent = certificate.LastIdent, 
+                Dn = certificate.Dn, 
+                Issuer = certificate.Issuer, 
+                Serial = certificate.Serial, 
+                State = (int)certificate.State, 
+                IdClient = certificate.IdClient
+            };
+        }
+        else
+        {
+            existingEntity.Id = certificate.Id;
+            existingEntity.ValidityDate = certificate.ValidityDate;
+            existingEntity.LastIdent = certificate.LastIdent;
+            existingEntity.Dn = certificate.Dn;
+            existingEntity.Issuer = certificate.Issuer;
+            existingEntity.Serial = certificate.Serial;
+            existingEntity.State = (int)certificate.State;
+            existingEntity.IdClient = certificate.IdClient;
+            return existingEntity;
+        }
     }
 
     public static CertificateCreateModel ToModelCreate(this CertificateBusinessEntity certificate)

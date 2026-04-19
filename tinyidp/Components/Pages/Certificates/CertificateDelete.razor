@@ -1,0 +1,127 @@
+@page "/certificates/delete/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@using Microsoft.AspNetCore.Components
+@attribute [Authorize]
+@inject ICredentialBusiness CredentialBusiness
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Certificate Management - TinyIDP</PageTitle>
+
+<h1>Certificate Management</h1>
+
+<div id="error">
+    <span class="error">
+        @if (certificateDelete != null && !string.IsNullOrEmpty(certificateDelete.ExceptionMessage))
+        {
+            @certificateDelete.ExceptionMessage
+        }
+    </span>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (certificateDelete != null && certificateDelete.CanAccess && !isLoading)
+{
+    <h3>Delete certificate</h3>
+    <div id="add-block" class="shadowbox">
+        <EditForm Model="certificateDelete" OnValidSubmit="HandleSubmit">
+
+            <table>
+                <tr>
+                    <td>
+                        <label for="Id">Id</label>
+                    </td>
+                    <td>
+                        @certificateDelete.Id
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="Dn">DN</label>
+                    </td>
+                    <td>
+                        @certificateDelete.Dn
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </td>
+                </tr>
+            </table>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private CertificateEditModel? certificateDelete;
+    private CertificateBusinessEntity? resultCertificate;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            resultCertificate = await CredentialBusiness.GetCertificate(Id);
+            
+            if (resultCertificate == null)
+            {
+                certificateDelete = new CertificateEditModel();
+                certificateDelete.ExceptionMessage = $"Certificate {Id} not found";
+                certificateDelete.CanAccess = false;
+            }
+            else
+            {
+                certificateDelete = resultCertificate.ToModelEdit();
+
+                if (authState.User.Claims.Role() != RoleCredential.Admin)
+                {
+                    certificateDelete.ExceptionMessage = "You don't have rights to access";
+                    certificateDelete.CanAccess = false;
+                }
+                else
+                {
+                    certificateDelete.CanAccess = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            certificateDelete ??= new CertificateEditModel();
+            certificateDelete.ExceptionMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (certificateDelete != null)
+            {
+                CredentialBusiness.RemoveCertificate(certificateDelete.ToBusiness(resultCertificate));
+                Navigation.NavigateTo($"/credentials/edit/{certificateDelete.IdClient}");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (certificateDelete != null)
+            {
+                certificateDelete.ExceptionMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+        }
+    }
+}
