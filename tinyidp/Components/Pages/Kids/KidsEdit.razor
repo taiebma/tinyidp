@@ -1,0 +1,170 @@
+@page "/kids/edit/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@using Microsoft.AspNetCore.Components
+@using tinyidp.infrastructure.keysmanagment
+@attribute [Authorize]
+@inject IKeysManagment KeysManagment
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Key Management - TinyIDP</PageTitle>
+
+<h1>Key Management</h1>
+
+<div id="error">
+    <span class="error">
+        @if (kidEdit != null && !string.IsNullOrEmpty(kidEdit.ExceptionMessage))
+        {
+            @kidEdit.ExceptionMessage
+        }
+    </span>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (kidEdit != null && kidEdit.CanAccess && !isLoading)
+{
+    <h3>Edit credential</h3>
+    <div id="add-block" class="shadowbox">
+        <EditForm Model="kidEdit" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <table>
+                <tr>
+                    <td>
+                        <label for="Id">Id</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            @kidEdit.Id
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="Kid">KID</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            @kidEdit.Kid
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="Algo">Algo</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            @kidEdit.Algo
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="State">State</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            <InputSelect id="State" @bind-Value="kidEdit.State" class="form-control">
+                                <option value="">Choose a State</option>
+                                @foreach (var value in Enum.GetValues(typeof(KidState)))
+                                {
+                                    <option value="@value">@value</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => kidEdit.State)" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="CreationDate">Creation Date</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            @kidEdit.CreationDate
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </td>
+                </tr>
+            </table>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private KidEditModel? kidEdit;
+    private KidBusinessEntity? resultKid;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            resultKid = KeysManagment.GetKeyById(Id);
+            if (resultKid == null)
+            {
+                kidEdit = new KidEditModel();
+                kidEdit.ExceptionMessage = "No KID found";
+                kidEdit.CanAccess = false;
+            }
+            else
+            {
+                kidEdit = resultKid.ToModelEdit();
+
+                if (authState.User.Claims.Role() != RoleCredential.Admin)
+                {
+                    kidEdit.ExceptionMessage = "You don't have rights to access";
+                    kidEdit.CanAccess = false;
+                }
+                else
+                {
+                    kidEdit.CanAccess = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            kidEdit ??= new KidEditModel();
+            kidEdit.ExceptionMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (kidEdit != null)
+            {
+                KeysManagment.Update(kidEdit.ToBusiness(resultKid));
+                Navigation.NavigateTo("/kids");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (kidEdit != null)
+            {
+                kidEdit.ExceptionMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+        }
+    }
+}

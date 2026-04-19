@@ -1,0 +1,151 @@
+@page "/kids/delete/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@using Microsoft.AspNetCore.Components
+@using tinyidp.infrastructure.keysmanagment
+@attribute [Authorize]
+@inject IKeysManagment KeysManagment
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Key Management - TinyIDP</PageTitle>
+
+<h1>Key Management</h1>
+
+<div id="error">
+    <span class="error">
+        @if (kidDelete != null && !string.IsNullOrEmpty(kidDelete.ExceptionMessage))
+        {
+            @kidDelete.ExceptionMessage
+        }
+    </span>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (kidDelete != null && kidDelete.CanAccess && !isLoading)
+{
+    <h3>Delete kid</h3>
+    <div id="add-block" class="shadowbox">
+        <EditForm Model="kidDelete" OnValidSubmit="HandleSubmit">
+
+            <table>
+                <tr>
+                    <td>
+                        <label for="Id">Id</label>
+                    </td>
+                    <td>
+                        @kidDelete.Id
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="Kid">KID</label>
+                    </td>
+                    <td>
+                        @kidDelete.Kid
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="Algo">Algo</label>
+                    </td>
+                    <td>
+                        @kidDelete.Algo
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="State">State</label>
+                    </td>
+                    <td>
+                        @kidDelete.State
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="CreationDate">Creation Date</label>
+                    </td>
+                    <td>
+                        @kidDelete.CreationDate
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </td>
+                </tr>
+            </table>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private KidDeleteModel? kidDelete;
+    private KidBusinessEntity? resultKid;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            resultKid = KeysManagment.GetKeyById(Id);
+            if (resultKid == null)
+            {
+                kidDelete = new KidDeleteModel();
+                kidDelete.ExceptionMessage = "No KID found";
+                kidDelete.CanAccess = false;
+            }
+            else
+            {
+                kidDelete = resultKid.ToModelDelete();
+
+                if (authState.User.Claims.Role() != RoleCredential.Admin)
+                {
+                    kidDelete.ExceptionMessage = "You don't have rights to access";
+                    kidDelete.CanAccess = false;
+                }
+                else
+                {
+                    kidDelete.CanAccess = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            kidDelete ??= new KidDeleteModel();
+            kidDelete.ExceptionMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (kidDelete != null)
+            {
+                KeysManagment.Remove(kidDelete.ToBusiness(resultKid));
+                Navigation.NavigateTo("/kids");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (kidDelete != null)
+            {
+                kidDelete.ExceptionMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+        }
+    }
+}

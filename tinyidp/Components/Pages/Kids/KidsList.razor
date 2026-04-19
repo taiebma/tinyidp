@@ -1,0 +1,103 @@
+@page "/kids"
+@using Microsoft.AspNetCore.Authorization
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@using Microsoft.AspNetCore.Components
+@using tinyidp.infrastructure.keysmanagment
+@attribute [Authorize]
+@inject IKeysManagment KeysManagment
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>KIDs Management - TinyIDP</PageTitle>
+
+<h1>KIDs Management</h1>
+
+<div id="error">
+    <span class="error">
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            @ErrorMessage
+        }
+    </span>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (CanAccess && !isLoading)
+{
+    <a href="/kids/create">Add new Key</a>
+
+    <h3>List of KIDs</h3>
+    <div id="list" class="shadowlist">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>KID</th>
+                    <th>Algo</th>
+                    <th>State</th>
+                    <th>Creation Date</th>
+                    <th>Valid</th>
+                    <th>Key Error</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in KidsView)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.Kid</td>
+                        <td>@item.Algo</td>
+                        <td>@item.State</td>
+                        <td>@item.CreationDate</td>
+                        <td>@item.Valid</td>
+                        <td>@item.KeyError</td>
+                        <td>
+                            <a href="@($"/kids/edit/{item.Id}")">Edit</a>
+                            <a href="@($"/kids/delete/{item.Id}")">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<KidView> KidsView = new();
+    private string? ErrorMessage;
+    private bool CanAccess = false;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            if (authState.User.Claims.Role() != RoleCredential.Admin)
+            {
+                ErrorMessage = "You don't have rights to access";
+                CanAccess = false;
+            }
+            else
+            {
+                CanAccess = true;
+                List<KidBusinessEntity> kids = KeysManagment.GetKeys();
+                KidsView = kids.Select(k => k.ToModelView()).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

@@ -164,15 +164,25 @@ public static class ModelsExtensions
         };
     }
 
-    public static KidBusinessEntity ToBusiness(this KidEditModel entity)
+    public static KidBusinessEntity ToBusiness(this KidEditModel entity, KidBusinessEntity? existingEntity = null)
     {
-        return new KidBusinessEntity() {
+        if (existingEntity == null)
+        {
+            return new KidBusinessEntity() {
              Algo = entity.Algo, 
              CreationDate = entity.CreationDate, 
              Id = entity.Id,
              Kid1 = entity.Kid, 
              State = entity.State
-        };
+            };
+        }
+        else        {
+            existingEntity.Algo = entity.Algo;
+            existingEntity.CreationDate = entity.CreationDate;
+            existingEntity.Kid1 = entity.Kid;
+            existingEntity.State = entity.State;
+            return existingEntity;
+        }
     }
 
     public static KidDeleteModel ToModelDelete(this KidBusinessEntity entity)
@@ -186,15 +196,26 @@ public static class ModelsExtensions
         };
     }
 
-    public static KidBusinessEntity ToBusiness(this KidDeleteModel entity)
+    public static KidBusinessEntity ToBusiness(this KidDeleteModel entity, KidBusinessEntity? existingEntity = null)
     {
-        return new KidBusinessEntity() {
+        if (existingEntity == null)
+        {
+            return new KidBusinessEntity() {
              Algo = entity.Algo, 
              CreationDate = entity.CreationDate, 
              Id = entity.Id,
              Kid1 = entity.Kid, 
              State = entity.State
-        };
+            };
+        }
+        else
+        {
+            existingEntity.Algo = entity.Algo;
+            existingEntity.CreationDate = entity.CreationDate;
+            existingEntity.Kid1 = entity.Kid;
+            existingEntity.State = entity.State;
+            return existingEntity;
+        }
     }
 
     public static TokenResponse ToModel(this TokenResponseBusiness token)

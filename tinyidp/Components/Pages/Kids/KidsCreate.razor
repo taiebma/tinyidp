@@ -1,0 +1,127 @@
+@page "/kids/create"
+@using Microsoft.AspNetCore.Authorization
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@using Microsoft.AspNetCore.Components
+@using tinyidp.infrastructure.keysmanagment
+@attribute [Authorize]
+@inject IKeysManagment KeysManagment
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Add new Key - TinyIDP</PageTitle>
+
+<h1>Add new Key</h1>
+
+<div id="error">
+    <span class="error">
+        @if (kidCreate != null && !string.IsNullOrEmpty(kidCreate.ExceptionMessage))
+        {
+            @kidCreate.ExceptionMessage
+        }
+    </span>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (kidCreate != null && kidCreate.CanAccess && !isLoading)
+{
+    <h3>Add credential</h3>
+    <div id="add-block" class="shadowbox">
+        <EditForm Model="kidCreate" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <table>
+                <tr>
+                    <td>
+                        <label for="Algo">Algo</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            <InputSelect id="Algo" @bind-Value="kidCreate.Algo" class="form-control">
+                                <option value="">Choose algo</option>
+                                @foreach (var value in Enum.GetValues(typeof(AlgoType)))
+                                {
+                                    <option value="@value">@value</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => kidCreate.Algo)" />
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <label for="Kid">KID (non mandatory)</label>
+                    </td>
+                    <td>
+                        <div class="form-group">
+                            <InputText id="Kid" @bind-Value="kidCreate.Kid" class="form-control" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </td>
+                </tr>
+            </table>
+        </EditForm>
+    </div>
+}
+
+@code {
+    private KidCreateModel? kidCreate;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            kidCreate = new KidCreateModel();
+            
+            if (authState.User.Claims.Role() != RoleCredential.Admin)
+            {
+                kidCreate.ExceptionMessage = "You don't have rights to access";
+                kidCreate.CanAccess = false;
+            }
+            else
+            {
+                kidCreate.CanAccess = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            kidCreate ??= new KidCreateModel();
+            kidCreate.ExceptionMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (kidCreate != null)
+            {
+                KeysManagment.GenNewKey(kidCreate.Algo, kidCreate.Kid ?? string.Empty);
+                Navigation.NavigateTo("/kids");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (kidCreate != null)
+            {
+                kidCreate.ExceptionMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+        }
+    }
+}
