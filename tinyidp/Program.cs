@@ -13,6 +13,10 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
 using tinyidp.Controllers;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using tinyidp.Business.BusinessEntities;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -163,6 +167,43 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.MapPost("/account/login-handler", async (
+    HttpContext context,
+    ICredentialBusiness credentialBusiness,
+    [FromForm] string login,
+    [FromForm] string password,
+    [FromForm] string? returnUrl) =>
+{
+    if (await credentialBusiness.VerifyPassword(login, password))
+    {
+        var user = await credentialBusiness.GetCredentialBusinessEntityByIdent(login);
+
+        if (user == null || (user.RoleIdent != RoleCredential.Admin && user.RoleIdent != RoleCredential.User))
+            return Results.Redirect("/?error=unauthorized");
+
+        user.LastIdent = DateTime.Now;
+        credentialBusiness.Update(user);
+
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.Ident),
+            new Claim("FullName", user.Ident),
+            new Claim("Role", user.RoleIdent.ToString())
+        };
+
+        var claimsIdentity = new ClaimsIdentity(
+            claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+        await context.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(claimsIdentity));
+
+        return Results.Redirect(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
+    }
+
+    return Results.Redirect("/account/login?error=invalid");
+}).DisableAntiforgery(); // ou gérez l'antiforgery manuellement
 
 app.MapGet("/oauth/.well-known/openid-configuration", DiscoveryController.GetConfiguration).WithName("WellKnown");
 app.MapGet("/oauth/keys/jwks.json", KeysController.Jwks).WithName("Jwks");

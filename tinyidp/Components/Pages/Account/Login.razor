@@ -4,6 +4,7 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager Navigation
 @inject IAntiforgery Antiforgery
 @inject ICredentialBusiness _credentialBusiness;
@@ -20,37 +21,33 @@
                     <h3 class="mb-0">Connexion</h3>
                 </div>
                 <div class="card-body">
-                    @if (!string.IsNullOrEmpty(errorMessage))
+                    @{
+                        var uri = new Uri(Navigation.Uri);
+                        var hasError = QueryHelpers.ParseQuery(uri.Query).TryGetValue("error", out var errorValue);
+                    }
+
+                    @if (hasError)
                     {
                         <div class="alert alert-danger" role="alert">
-                            @errorMessage
+                            Identifiant ou mot de passe incorrect.
                         </div>
                     }
 
-                    <form method="post" @formname="loginForm" @onsubmit="OnSubmitAsync">
+                    <form method="post" action="/account/login-handler">
                         <AntiforgeryToken />
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
                         <div class="mb-3">
-                            <label for="login" class="form-label">Identifiant</label>
-                            <InputText type="text" class="form-control" @bind-value="model!.Login" required />
+                            <label fclass="form-label">Identifiant</label>
+                            <input type="text" name="login" class="form-control" required />
                         </div>
 
                         <div class="mb-3">
-                            <label for="password" class="form-label">Mot de passe</label>
-                            <InputText type="password" class="form-control" @bind-value="model!.Password" required />
+                            <label class="form-label">Mot de passe</label>
+                            <input type="password" name="password" class="form-control" required />
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
-                                @if (isSubmitting)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">Connexion en cours...</span>
-                                    
-                                }
-                                else
-                                {
-                                    <span>Connexion</span>
-                                }
-                            </button>
+                            <button type="submit" class="btn btn-primary">Connexion</button>
                         </div>
 
                         <div class="mt-3">
@@ -66,12 +63,10 @@
 </div>
 
 @code {
-    [SupplyParameterFromForm]
-    private LoginModel? model { get; set; }
-
-    [Parameter]
+    [SupplyParameterFromQuery]
     public string? returnUrl { get; set; }
 
+/*
     private string errorMessage = string.Empty;
     private bool isSubmitting = false;
 
@@ -164,4 +159,5 @@
         [Required(ErrorMessage = "Le mot de passe est obligatoire")]
         public string? Password { get; set; }
     }
+    */
 }
