@@ -1,0 +1,126 @@
+@page "/truststore/delete/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Business.Certificate
+@using tinyidp.Pages.Models
+@using Microsoft.AspNetCore.Components
+@attribute [Authorize]
+@inject IThrustStoreService ThrustStoreService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>TrustStore Management - TinyIDP</PageTitle>
+
+<h1>TrustStore Management</h1>
+
+<div id="error">
+    <span class="error">
+        @if (thrustStoreEdit != null && !string.IsNullOrEmpty(thrustStoreEdit.ExceptionMessage))
+        {
+            @thrustStoreEdit.ExceptionMessage
+        }
+    </span>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (thrustStoreEdit != null && thrustStoreEdit.CanAccess && !isLoading)
+{
+    <h3>Delete CA</h3>
+    <div id="add-block" class="shadowbox">
+        <EditForm Model="thrustStoreEdit" OnValidSubmit="HandleSubmit">
+            <table>
+                <tr>
+                    <td>
+                        <label for="Id">Id</label>
+                    </td>
+                    <td>
+                        @thrustStoreEdit.Id
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="Dn">DN</label>
+                    </td>
+                    <td>
+                        @thrustStoreEdit.Dn
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </td>
+                </tr>
+            </table>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ThrustStoreEditModel? thrustStoreEdit;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            ThrustStoreBusiness? result = await ThrustStoreService.GetCa(Id);
+            
+            if (result == null)
+            {
+                thrustStoreEdit = new ThrustStoreEditModel();
+                thrustStoreEdit.ExceptionMessage = $"Certificate {Id} not found";
+                thrustStoreEdit.CanAccess = false;
+            }
+            else
+            {
+                thrustStoreEdit = result.ToModelEdit();
+
+                if (authState.User.Claims.Role() != RoleCredential.Admin)
+                {
+                    thrustStoreEdit.ExceptionMessage = "You don't have rights to access";
+                    thrustStoreEdit.CanAccess = false;
+                }
+                else
+                {
+                    thrustStoreEdit.CanAccess = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            thrustStoreEdit ??= new ThrustStoreEditModel();
+            thrustStoreEdit.ExceptionMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            if (thrustStoreEdit != null)
+            {
+                ThrustStoreService.RemoveCa(thrustStoreEdit.ToBusiness());
+                Navigation.NavigateTo("/truststore");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (thrustStoreEdit != null)
+            {
+                thrustStoreEdit.ExceptionMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+        }
+    }
+}

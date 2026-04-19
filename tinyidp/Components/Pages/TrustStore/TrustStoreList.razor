@@ -1,0 +1,97 @@
+@page "/truststore"
+@using Microsoft.AspNetCore.Authorization
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@using Microsoft.AspNetCore.Components
+@attribute [Authorize]
+@inject IThrustStoreService TrustStoreService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>TrustStore Management - TinyIDP</PageTitle>
+
+<h1>TrustStore Management</h1>
+
+<div id="error">
+    <span class="error">
+        @if (thrustStoreCreateModel != null && !string.IsNullOrEmpty(thrustStoreCreateModel.ExceptionMessage))
+        {
+            @thrustStoreCreateModel.ExceptionMessage
+        }
+    </span>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (thrustStoreCreateModel != null && thrustStoreCreateModel.CanAccess && !isLoading)
+{
+    <a href="/truststore/create">Add CA</a>
+
+    <h3>List of CA Trusted</h3>
+    <div id="list" class="shadowlist">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>DN</th>
+                    <th>Issuer</th>
+                    <th>Validity Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in TrustStoreView)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td>@item.Dn</td>
+                        <td>@item.Issuer</td>
+                        <td>@item.ValidityDate</td>
+                        <td>
+                            <a href="@($"/truststore/delete/{item.Id}")">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<ThrustStoreViewModel> TrustStoreView = new();
+    private ThrustStoreCreateModel? thrustStoreCreateModel;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            thrustStoreCreateModel = new ThrustStoreCreateModel();
+            
+            if (authState.User.Claims.Role() != RoleCredential.Admin && authState.User.Claims.Role() != RoleCredential.User)
+            {
+                thrustStoreCreateModel.ExceptionMessage = "You don't have rights to access";
+                thrustStoreCreateModel.CanAccess = false;
+            }
+            else
+            {
+                thrustStoreCreateModel.CanAccess = true;
+                List<ThrustStoreBusiness> store = await TrustStoreService.GetAllCaThrusted();
+                TrustStoreView = store.Select(p => p.ToModelView()).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            thrustStoreCreateModel ??= new ThrustStoreCreateModel();
+            thrustStoreCreateModel.ExceptionMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

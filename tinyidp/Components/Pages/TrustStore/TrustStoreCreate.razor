@@ -1,0 +1,136 @@
+@page "/truststore/create"
+@using Microsoft.AspNetCore.Authorization
+@using tinyidp.Business.BusinessEntities
+@using tinyidp.Pages.Models
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Security.Cryptography.X509Certificates
+@attribute [Authorize]
+@inject IThrustStoreService ThrustStoreService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILogger<TrustStoreCreate> Logger
+
+<PageTitle>Add CA - TinyIDP</PageTitle>
+
+<h1>TrustStore Management</h1>
+
+<div id="error">
+    <span class="error">
+        @if (thrustStoreCreate != null && !string.IsNullOrEmpty(thrustStoreCreate.ExceptionMessage))
+        {
+            @thrustStoreCreate.ExceptionMessage
+        }
+    </span>
+</div>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (thrustStoreCreate != null && thrustStoreCreate.CanAccess && !isLoading)
+{
+    <h3>Add certificate</h3>
+
+    <div id="add-block" class="shadowbox">
+        <div>
+            <label for="certificateFile">Select certificate file (.pem, .cer, .crt)</label>
+            <InputFile id="certificateFile" OnChange="OnFileSelected" accept=".pem,.cer,.crt,.p7b" />
+        </div>
+        @if (selectedFileName != null)
+        {
+            <p>Selected file: @selectedFileName</p>
+        }
+        <button type="button" class="btn btn-primary" disabled="@(isUploading || selectedFile == null)" @onclick="HandleSubmit">
+            @if (isUploading)
+            {
+                <span>Uploading...</span>
+            }
+            else
+            {
+                <span>Add</span>
+            }
+        </button>
+    </div>
+}
+
+@code {
+    private ThrustStoreCreateModel? thrustStoreCreate;
+    private IBrowserFile? selectedFile;
+    private string? selectedFileName;
+    private bool isLoading = true;
+    private bool isUploading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            
+            thrustStoreCreate = new ThrustStoreCreateModel();
+            
+            if (authState.User.Claims.Role() != RoleCredential.Admin)
+            {
+                thrustStoreCreate.ExceptionMessage = "You don't have rights to access";
+                thrustStoreCreate.CanAccess = false;
+            }
+            else
+            {
+                thrustStoreCreate.CanAccess = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            thrustStoreCreate ??= new ThrustStoreCreateModel();
+            thrustStoreCreate.ExceptionMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.GetMultipleFiles(1).FirstOrDefault();
+        selectedFileName = selectedFile?.Name;
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            isUploading = true;
+            
+            if (selectedFile == null)
+            {
+                if (thrustStoreCreate != null)
+                    thrustStoreCreate.ExceptionMessage = "No file selected";
+                return;
+            }
+
+            using MemoryStream memoryStream = new MemoryStream();
+            await selectedFile.OpenReadStream().CopyToAsync(memoryStream);
+            
+            X509Certificate2 cert = X509CertificateLoader.LoadCertificate(memoryStream.ToArray());
+
+            DateTime.TryParse(cert.GetExpirationDateString(), out DateTime validityDate);
+            
+            ThrustStoreService.AddCaToStore(cert.Subject, cert.Issuer, validityDate, cert);
+            
+            Navigation.NavigateTo("/truststore");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.Message);
+            if (thrustStoreCreate != null)
+            {
+                thrustStoreCreate.ExceptionMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+            }
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+}
