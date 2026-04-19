@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using tinyidp.Business.BusinessEntities;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace tinyidp.Pages.Models;
+namespace tinyidp.infrastructure.bdd;
 
-public partial class ThrustStoreEditModel
+public partial class TrustStore
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
-    [Required]
     public string Dn { get; set; } = null!;
 
-    [Required]
     public string Issuer { get; set; } = null!;
 
     public DateTime ValidityDate { get; set; }
 
     public string Certificate { get; set; } = null!;
-
-    public string? ExceptionMessage { get; set; } = null;
-
-    public bool CanAccess { get; set; } = false;
 }

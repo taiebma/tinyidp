@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace tinyidp.Pages.Models;
 
-public partial class ThrustStoreViewModel
+public partial class TrustStoreViewModel
 {
     public int Id { get; set; }
 

@@ -6,7 +6,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using System.Security.Cryptography.X509Certificates
 @attribute [Authorize]
-@inject IThrustStoreService ThrustStoreService
+@inject ITrustStoreService TrustStoreService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILogger<TrustStoreCreate> Logger
@@ -17,9 +17,9 @@
 
 <div id="error">
     <span class="error">
-        @if (thrustStoreCreate != null && !string.IsNullOrEmpty(thrustStoreCreate.ExceptionMessage))
+        @if (trustStoreCreate != null && !string.IsNullOrEmpty(trustStoreCreate.ExceptionMessage))
         {
-            @thrustStoreCreate.ExceptionMessage
+            @trustStoreCreate.ExceptionMessage
         }
     </span>
 </div>
@@ -28,7 +28,7 @@
 {
     <p><em>Loading...</em></p>
 }
-else if (thrustStoreCreate != null && thrustStoreCreate.CanAccess && !isLoading)
+else if (trustStoreCreate != null && trustStoreCreate.CanAccess && !isLoading)
 {
     <h3>Add certificate</h3>
 
@@ -55,7 +55,7 @@ else if (thrustStoreCreate != null && thrustStoreCreate.CanAccess && !isLoading)
 }
 
 @code {
-    private ThrustStoreCreateModel? thrustStoreCreate;
+    private TrustStoreCreateModel? trustStoreCreate;
     private IBrowserFile? selectedFile;
     private string? selectedFileName;
     private bool isLoading = true;
@@ -67,22 +67,22 @@ else if (thrustStoreCreate != null && thrustStoreCreate.CanAccess && !isLoading)
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             
-            thrustStoreCreate = new ThrustStoreCreateModel();
+            trustStoreCreate = new TrustStoreCreateModel();
             
             if (authState.User.Claims.Role() != RoleCredential.Admin)
             {
-                thrustStoreCreate.ExceptionMessage = "You don't have rights to access";
-                thrustStoreCreate.CanAccess = false;
+                trustStoreCreate.ExceptionMessage = "You don't have rights to access";
+                trustStoreCreate.CanAccess = false;
             }
             else
             {
-                thrustStoreCreate.CanAccess = true;
+                trustStoreCreate.CanAccess = true;
             }
         }
         catch (Exception ex)
         {
-            thrustStoreCreate ??= new ThrustStoreCreateModel();
-            thrustStoreCreate.ExceptionMessage = ex.Message;
+            trustStoreCreate ??= new TrustStoreCreateModel();
+            trustStoreCreate.ExceptionMessage = ex.Message;
         }
         finally
         {
@@ -104,8 +104,8 @@ else if (thrustStoreCreate != null && thrustStoreCreate.CanAccess && !isLoading)
             
             if (selectedFile == null)
             {
-                if (thrustStoreCreate != null)
-                    thrustStoreCreate.ExceptionMessage = "No file selected";
+                if (trustStoreCreate != null)
+                    trustStoreCreate.ExceptionMessage = "No file selected";
                 return;
             }
 
@@ -116,16 +116,16 @@ else if (thrustStoreCreate != null && thrustStoreCreate.CanAccess && !isLoading)
 
             DateTime.TryParse(cert.GetExpirationDateString(), out DateTime validityDate);
             
-            ThrustStoreService.AddCaToStore(cert.Subject, cert.Issuer, validityDate, cert);
+            TrustStoreService.AddCaToStore(cert.Subject, cert.Issuer, validityDate, cert);
             
             Navigation.NavigateTo("/truststore");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex.Message);
-            if (thrustStoreCreate != null)
+            if (trustStoreCreate != null)
             {
-                thrustStoreCreate.ExceptionMessage = $"{ex.Message} - {ex.InnerException?.Message}";
+                trustStoreCreate.ExceptionMessage = $"{ex.Message} - {ex.InnerException?.Message}";
             }
         }
         finally

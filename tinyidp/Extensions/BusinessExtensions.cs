@@ -201,9 +201,9 @@ public static class BusinessExtensions
         return AlgoType.RSA;
     }
 
-    public static ThrustStoreBusiness ToBusiness(this ThrustStore store)
+    public static TrustStoreBusiness ToBusiness(this TrustStore store)
     {
-        return new ThrustStoreBusiness() {
+        return new TrustStoreBusiness() {
             Id = store.Id, 
             Dn = store.Dn, 
             Issuer = store.Issuer, 
@@ -212,9 +212,9 @@ public static class BusinessExtensions
         };
     }
 
-    public static ThrustStore ToEntity(this ThrustStoreBusiness store)
+    public static TrustStore ToEntity(this TrustStoreBusiness store)
     {
-        return new ThrustStore() {
+        return new TrustStore() {
             Id = store.Id, 
             Dn = store.Dn, 
             Issuer = store.Issuer, 

@@ -1,7 +1,7 @@
 namespace tinyidp.Business.BusinessEntities;
 
 
-public partial class ThrustStoreBusiness
+public partial class TrustStoreBusiness
 {
     public int Id { get; set; }
 

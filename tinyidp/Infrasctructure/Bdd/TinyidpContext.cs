@@ -22,7 +22,7 @@ public partial class TinyidpContext : DbContext
 
     public virtual DbSet<Token> Tokens { get; set; }
 
-    public virtual DbSet<ThrustStore> ThrustStore { get; set; }
+    public virtual DbSet<TrustStore> TrustStore { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -45,7 +45,7 @@ public partial class TinyidpContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<ThrustStore>(entity =>
+        modelBuilder.Entity<TrustStore>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("thrust_store_pk");
 

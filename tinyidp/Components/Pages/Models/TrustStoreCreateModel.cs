@@ -5,7 +5,7 @@ using tinyidp.Business.BusinessEntities;
 
 namespace tinyidp.Pages.Models;
 
-public partial class ThrustStoreCreateModel
+public partial class TrustStoreCreateModel
 {
     public string? ExceptionMessage { get; set; } = null;
 

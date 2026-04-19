@@ -24,7 +24,7 @@ public class TokenServiceTest
     private readonly Mock<IEncryptionService> _encryptionServiceMock;
     private readonly Mock<ITokenRepository> _tokenRepositoryMock;
     private readonly Mock<ICredentialBusiness> _credentialBusinessMock;
-    private readonly Mock<IThrustStoreService> _thrustStoreServiceMock;
+    private readonly Mock<ITrustStoreService> _thrustStoreServiceMock;
     private readonly Mock<ITokenStrategy> _tokenStrategyMock;
     private Mock<HttpContext> _contextMock;
     private Mock<HttpRequest> _requestMock;
@@ -41,7 +41,7 @@ public class TokenServiceTest
         _encryptionServiceMock = new Mock<IEncryptionService>();
         _tokenRepositoryMock = new Mock<ITokenRepository>();
         _credentialBusinessMock = new Mock<ICredentialBusiness>();
-        _thrustStoreServiceMock = new Mock<IThrustStoreService>();
+        _thrustStoreServiceMock = new Mock<ITrustStoreService>();
         _tokenStrategyMock = new Mock<ITokenStrategy>();
         _contextMock = new Mock<HttpContext>();
         _requestMock = new Mock<HttpRequest>();

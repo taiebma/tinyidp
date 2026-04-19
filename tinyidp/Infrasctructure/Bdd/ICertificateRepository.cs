@@ -8,9 +8,9 @@ public interface ICertificateRepository
     public void Update(Certificate certificate);
     public Task<Certificate?> Get(int id);
 
-    public void AddThrustCertificate(ThrustStore certificate);
-    public void RemoveThrustCertificate(ThrustStore certificate);
-    public void UpdateThrustCertificate(ThrustStore certificate);
-    public Task<ThrustStore?> GetThrustCertificate(int id);
-    public Task<List<ThrustStore>> GetThrustStore();
+    public void AddTrustCertificate(TrustStore certificate);
+    public void RemoveTrustCertificate(TrustStore certificate);
+    public void UpdateTrustCertificate(TrustStore certificate);
+    public Task<TrustStore?> GetTrustCertificate(int id);
+    public Task<List<TrustStore>> GetTrustStore();
 }

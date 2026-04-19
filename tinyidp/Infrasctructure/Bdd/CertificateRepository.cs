@@ -38,32 +38,32 @@ public class CertificateRepository : ICertificateRepository
             .FirstOrDefaultAsync();
     }
 
-    public Task<List<ThrustStore>> GetThrustStore()
+    public Task<List<TrustStore>> GetTrustStore()
     {
-        return _tinyidpContext.ThrustStore.AsNoTracking().OrderBy(p => p.Dn).ToListAsync();
+        return _tinyidpContext.TrustStore.AsNoTracking().OrderBy(p => p.Dn).ToListAsync();
     }
 
-    public void AddThrustCertificate(ThrustStore certificate)
+    public void AddTrustCertificate(TrustStore certificate)
     {
-        _tinyidpContext.ThrustStore.Add(certificate);
+        _tinyidpContext.TrustStore.Add(certificate);
         _tinyidpContext.SaveChanges();
     }
 
-    public void RemoveThrustCertificate(ThrustStore certificate)
+    public void RemoveTrustCertificate(TrustStore certificate)
     {
-        _tinyidpContext.ThrustStore.Remove(certificate);
+        _tinyidpContext.TrustStore.Remove(certificate);
         _tinyidpContext.SaveChanges();
     }
 
-    public void UpdateThrustCertificate(ThrustStore certificate)
+    public void UpdateTrustCertificate(TrustStore certificate)
     {
-        _tinyidpContext.ThrustStore.Update(certificate);
+        _tinyidpContext.TrustStore.Update(certificate);
         _tinyidpContext.SaveChanges();
     }
 
-    public Task<ThrustStore?> GetThrustCertificate(int id)
+    public Task<TrustStore?> GetTrustCertificate(int id)
     {
-        return _tinyidpContext.ThrustStore.Where(p => p.Id == id)
+        return _tinyidpContext.TrustStore.Where(p => p.Id == id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
     }

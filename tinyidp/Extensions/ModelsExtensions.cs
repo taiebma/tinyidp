@@ -313,27 +313,27 @@ public static class ModelsExtensions
         };
     }
 
-    public static ThrustStoreViewModel ToModelView( this ThrustStoreBusiness thrustStore)
+    public static TrustStoreViewModel ToModelView( this TrustStoreBusiness thrustStore)
     {
-        return new ThrustStoreViewModel() {
+        return new TrustStoreViewModel() {
             Id = thrustStore.Id, 
             Dn = thrustStore.Dn, 
             Issuer = thrustStore.Issuer, 
             ValidityDate = thrustStore.ValidityDate
         };
     }
-    public static ThrustStoreEditModel ToModelEdit( this ThrustStoreBusiness thrustStore)
+    public static TrustStoreEditModel ToModelEdit( this TrustStoreBusiness thrustStore)
     {
-        return new ThrustStoreEditModel() {
+        return new TrustStoreEditModel() {
             Id = thrustStore.Id, 
             Dn = thrustStore.Dn, 
             Issuer = thrustStore.Issuer, 
             ValidityDate = thrustStore.ValidityDate
         };
     }
-    public static ThrustStoreBusiness ToBusiness( this ThrustStoreEditModel thrustStore)
+    public static TrustStoreBusiness ToBusiness( this TrustStoreEditModel thrustStore)
     {
-        return new ThrustStoreBusiness() {
+        return new TrustStoreBusiness() {
             Id = thrustStore.Id, 
             Dn = thrustStore.Dn, 
             Issuer = thrustStore.Issuer, 

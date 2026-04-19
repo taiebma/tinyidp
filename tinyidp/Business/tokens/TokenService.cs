@@ -20,7 +20,7 @@ public class TokenService : ITokenService
     private readonly IEncryptionService _encryptionService;
     private readonly ITokenRepository _tokenRepository;
     private readonly ICredentialBusiness _credentialBusiness;
-    private readonly IThrustStoreService _thrustStoreService;
+    private readonly ITrustStoreService _thrustStoreService;
 
     public static IList<string> SupportedScopes { get; private set; } = new string[] { "openid", "profile", "email", "address", "phone", "offline_access" };
 
@@ -31,7 +31,7 @@ public class TokenService : ITokenService
             IEncryptionService encryptionService,
             ITokenRepository tokenRepository,
             ICredentialBusiness credentialBusiness,
-            IThrustStoreService thrustStoreService)
+            ITrustStoreService thrustStoreService)
     {
         _conf = conf;
         _logger = logger;

@@ -102,7 +102,7 @@ builder.Services.AddHostedService(sp =>
 
 //Business
 builder.Services.AddScoped<ICredentialBusiness, CredentialBusiness>();
-builder.Services.AddScoped<IThrustStoreService, ThrustStoreService>();
+builder.Services.AddScoped<ITrustStoreService, TrustStoreService>();
 builder.Services.AddSingleton<IMemoryCache, MemoryCache>();
 
 // Secu

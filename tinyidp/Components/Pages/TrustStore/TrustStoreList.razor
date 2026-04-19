@@ -4,7 +4,7 @@
 @using tinyidp.Pages.Models
 @using Microsoft.AspNetCore.Components
 @attribute [Authorize]
-@inject IThrustStoreService TrustStoreService
+@inject ITrustStoreService TrustStoreService
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -14,9 +14,9 @@
 
 <div id="error">
     <span class="error">
-        @if (thrustStoreCreateModel != null && !string.IsNullOrEmpty(thrustStoreCreateModel.ExceptionMessage))
+        @if (trustStoreCreateModel != null && !string.IsNullOrEmpty(trustStoreCreateModel.ExceptionMessage))
         {
-            @thrustStoreCreateModel.ExceptionMessage
+            @trustStoreCreateModel.ExceptionMessage
         }
     </span>
 </div>
@@ -25,7 +25,7 @@
 {
     <p><em>Loading...</em></p>
 }
-else if (thrustStoreCreateModel != null && thrustStoreCreateModel.CanAccess && !isLoading)
+else if (trustStoreCreateModel != null && trustStoreCreateModel.CanAccess && !isLoading)
 {
     <a href="/truststore/create">Add CA</a>
 
@@ -60,8 +60,8 @@ else if (thrustStoreCreateModel != null && thrustStoreCreateModel.CanAccess && !
 }
 
 @code {
-    private List<ThrustStoreViewModel> TrustStoreView = new();
-    private ThrustStoreCreateModel? thrustStoreCreateModel;
+    private List<TrustStoreViewModel> TrustStoreView = new();
+    private TrustStoreCreateModel? trustStoreCreateModel;
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
@@ -70,24 +70,24 @@ else if (thrustStoreCreateModel != null && thrustStoreCreateModel.CanAccess && !
         {
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             
-            thrustStoreCreateModel = new ThrustStoreCreateModel();
+            trustStoreCreateModel = new TrustStoreCreateModel();
             
             if (authState.User.Claims.Role() != RoleCredential.Admin && authState.User.Claims.Role() != RoleCredential.User)
             {
-                thrustStoreCreateModel.ExceptionMessage = "You don't have rights to access";
-                thrustStoreCreateModel.CanAccess = false;
+                trustStoreCreateModel.ExceptionMessage = "You don't have rights to access";
+                trustStoreCreateModel.CanAccess = false;
             }
             else
             {
-                thrustStoreCreateModel.CanAccess = true;
-                List<ThrustStoreBusiness> store = await TrustStoreService.GetAllCaThrusted();
+                trustStoreCreateModel.CanAccess = true;
+                List<TrustStoreBusiness> store = await TrustStoreService.GetAllCaTrusted();
                 TrustStoreView = store.Select(p => p.ToModelView()).ToList();
             }
         }
         catch (Exception ex)
         {
-            thrustStoreCreateModel ??= new ThrustStoreCreateModel();
-            thrustStoreCreateModel.ExceptionMessage = ex.Message;
+            trustStoreCreateModel ??= new TrustStoreCreateModel();
+            trustStoreCreateModel.ExceptionMessage = ex.Message;
         }
         finally
         {
