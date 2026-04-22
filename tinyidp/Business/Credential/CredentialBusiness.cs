@@ -94,12 +94,12 @@ public class CredentialBusiness : ICredentialBusiness
         return result.ToBusiness();
     }
 
-    public void Update(CredentialBusinessEntity entity)
+    public async Task Update(CredentialBusinessEntity entity)
     {
         if (!entity.PassNew.Equals(entity.Pass))
             entity.Pass = _hashedPasswordPbkbf2.GetHashedPasswordPbkbf2(entity.PassNew);
         _credentialRepository.Update(entity.ToEntity());
-        _credentialRepository.SaveChanges();
+        await _credentialRepository.SaveChanges();
    }
 
     public void UpdateEntity(infrastructure.bdd.Credential entity)

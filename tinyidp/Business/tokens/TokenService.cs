@@ -136,7 +136,7 @@ public class TokenService : ITokenService
 
     public string GenerateRefreshToken(RefreshTokenResponse rtoken)
     {
-        string serializedRtoken = JsonSerializer.Serialize(rtoken);
+        string serializedRtoken = JsonSerializer.Serialize(rtoken, TinyIdpJsonSerializerContext.Default.RefreshTokenResponse);
         return _encryptionService.Encrypt(serializedRtoken);
     }    
 }

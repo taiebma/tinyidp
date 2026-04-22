@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using tinyidp.Business.BusinessEntities;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
+using tinyidp.Controllers.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +36,6 @@ builder.Services.AddCors(options =>
         o.AllowAnyMethod();
     });
 });
-builder.Services.AddSession();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -44,24 +44,10 @@ builder.Services.AddSwaggerGen(c =>
   });
 
 // Add services to the container.
-builder.Services.AddRazorPages(options =>
-{
-    options.Conventions.AuthorizeFolder("/Credentials");
-    options.Conventions.AuthorizeFolder("/Certificates");
-    options.Conventions.AuthorizeFolder("/ThrustStore");
-    options.Conventions.AuthorizeFolder("/Kids");
-    options.Conventions.AuthorizeFolder("/Token");
-    options.Conventions.AllowAnonymousToFolder("/Login");
-});
-
-// Blazor Server
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
 builder.Services.AddResponseCompression();
 builder.Services.AddHealthChecks();
 
-builder.Services.AddDbContextPool<TinyidpContext>((serviceProvider, options) =>
+builder.Services.AddPooledDbContextFactory<TinyidpContext>((serviceProvider, options) =>
 {
     BddConfig? conf = builder.Configuration?.GetSection("TINYIDP_BDDCONFIG").Get<BddConfig>();
 
@@ -85,7 +71,7 @@ builder.Services.AddDbContextPool<TinyidpContext>((serviceProvider, options) =>
 }
 );
 
-builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+//builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
 // Infrastructure
 builder.Services.AddScoped<ICredentialRepository, CredentialRepository>();
@@ -115,7 +101,12 @@ builder.Services.AddScoped<IHashedPasswordPbkbf2, HashedPasswordPbkbf2>();
 builder.Services.AddTokenStrategies();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie();
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/login";
+        options.LogoutPath = "/logout";
+        options.AccessDeniedPath = "/access-denied";
+    });
 
 //  Config kestrel
 builder.Services.Configure<KestrelServerOptions>(options =>
@@ -128,7 +119,21 @@ builder.Services.Configure<KestrelServerOptions>(options =>
 
 });
 
-builder.Services.AddOpenApi();
+builder.Services.AddAntiforgery(options => 
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("UserInfoPolicy", policy =>
+    {
+        policy.AddAuthenticationSchemes(CookieAuthenticationDefaults.AuthenticationScheme);
+        policy.RequireClaim("Role", new[] { RoleCredential.Admin.ToString(), RoleCredential.User.ToString() });
+    });
+});
+
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 var app = builder.Build();
 
@@ -183,7 +188,7 @@ app.MapPost("/account/login-handler", async (
             return Results.Redirect("/?error=unauthorized");
 
         user.LastIdent = DateTime.Now;
-        credentialBusiness.Update(user);
+        await credentialBusiness.Update(user);
 
         var claims = new List<Claim>
         {
@@ -205,11 +210,17 @@ app.MapPost("/account/login-handler", async (
     return Results.Redirect("/account/login?error=invalid");
 }).DisableAntiforgery(); // ou gérez l'antiforgery manuellement
 
-app.MapGet("/oauth/.well-known/openid-configuration", DiscoveryController.GetConfiguration).WithName("WellKnown");
-app.MapGet("/oauth/keys/jwks.json", KeysController.Jwks).WithName("Jwks");
-app.MapPost("/oauth/token", OAuthController.GetToken).WithName("GetToken").DisableAntiforgery();;
-app.MapGet("/oauth/authorize", OAuthController.Authorize).WithName("Authorize");
-app.MapGet("/oauth/userinfo", OAuthController.UserInfo).WithName("UserInfo");
+app.MapGet("/oauth/.well-known/openid-configuration", (HttpContext context) => DiscoveryController.GetConfiguration).WithName("WellKnown")
+    .Produces<DiscoveryResponse>(StatusCodes.Status200OK);
+app.MapGet("/oauth/keys/jwks.json", (HttpContext context) => KeysController.Jwks).WithName("Jwks")
+    .Produces<KeysResponse>(StatusCodes.Status200OK);
+app.MapPost("/oauth/token", (HttpContext context, TokenRequestBusiness request) => OAuthController.GetToken).WithName("GetToken").DisableAntiforgery()
+    .Accepts<TokenRequestBusiness>("application/json")
+    .Produces<TokenResponseBusiness>(StatusCodes.Status200OK);
+app.MapGet("/oauth/authorize", (HttpContext context, string client_id, string redirect_uri, string response_type, string? scope, string? state) => OAuthController.Authorize).WithName("Authorize");
+app.MapGet("/oauth/userinfo", (HttpContext context) => OAuthController.UserInfo).WithName("UserInfo")
+    .Produces<tinyidp.Business.BusinessEntities.AppUser>(StatusCodes.Status200OK)
+    .RequireAuthorization();
 app.MapHealthChecks("/health");
 
 //app.UseHttpsRedirection();
@@ -227,7 +238,5 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<tinyidp.Components.App>()
     .AddInteractiveServerRenderMode();
-
-app.MapRazorPages();
 
 app.Run();

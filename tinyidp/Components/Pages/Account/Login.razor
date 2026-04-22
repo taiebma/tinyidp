@@ -103,7 +103,7 @@
 
             //  Update last connection
             user.LastIdent = DateTime.Now;
-            _credentialBusiness.Update(user);
+            await _credentialBusiness.Update(user);
 
             if (user.RoleIdent != RoleCredential.Admin && user.RoleIdent != RoleCredential.User)
             {

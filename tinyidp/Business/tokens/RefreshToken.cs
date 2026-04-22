@@ -53,7 +53,7 @@ public class RefreshToken : ITokenStrategy
         RefreshTokenResponse? refreshTokenResponse;
         try
         {
-            refreshTokenResponse = JsonSerializer.Deserialize<RefreshTokenResponse>( _encryptionService.Decrypt( request.refresh_token??"" ));
+            refreshTokenResponse = JsonSerializer.Deserialize<RefreshTokenResponse>( _encryptionService.Decrypt(request.refresh_token ?? ""), TinyIdpJsonSerializerContext.Default.RefreshTokenResponse);
             if (refreshTokenResponse == null)
                 throw new TinyidpTokenException("Error when decoding refresh_token", "invalid_token");
         }

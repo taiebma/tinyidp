@@ -8,5 +8,4 @@ public class RefreshTokenResponse
     public long LifeTime { get; set; } = 0;
 
     public AlgoKeyType Algo { get; set; }
-    
 }

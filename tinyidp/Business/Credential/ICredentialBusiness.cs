@@ -7,7 +7,7 @@ namespace tinyidp.Business.Credential;
 public interface ICredentialBusiness
 {
     public void AddNewCredential(CredentialBusinessEntity entity);
-    public void Update(CredentialBusinessEntity entity);
+    public Task Update(CredentialBusinessEntity entity);
     public void UpdateEntity(infrastructure.bdd.Credential entity);
     public void Remove(CredentialBusinessEntity entity);
     public Task<List<CredentialBusinessEntity>> GetAll();

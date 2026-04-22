@@ -32,7 +32,7 @@
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Nouveau mot de passe</label>
-                            <input type="password" id="password" class="form-control" @bind="model.PassNew" required />
+                            <input type="password" id="password" class="form-control" @bind="model!.PassNew" required />
                         </div>
 
                         <div class="d-grid gap-2">
@@ -119,7 +119,7 @@
             user.Pass = "";
             user.PassNew = model.PassNew;
             user.MustChangePwd = false;
-            CredentialBusiness.Update(user);
+            await CredentialBusiness.Update(user);
 
             Navigation.NavigateTo("/account/login", forceLoad: true);
         }

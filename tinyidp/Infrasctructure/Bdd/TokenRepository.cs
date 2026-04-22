@@ -1,31 +1,36 @@
 
 
+using Microsoft.EntityFrameworkCore;
+
 namespace tinyidp.infrastructure.bdd;
 
 public class TokenRepository : ITokenRepository
 {
-    private readonly TinyidpContext _tinyidpContext;
+    private readonly IDbContextFactory<TinyidpContext> _tinyidpContext;
     
-    public TokenRepository( TinyidpContext tinyidpContext)
+    public TokenRepository( IDbContextFactory<TinyidpContext> tinyidpContext)
     {
         _tinyidpContext = tinyidpContext;
     }
 
     public void Add(Token token)
     {
-        _tinyidpContext.Add(token);
-        _tinyidpContext.SaveChanges();
+        using var context = _tinyidpContext.CreateDbContext();
+        context.Add(token);
+        context.SaveChanges();
     }
 
     public void Remove(Token token)
     {
-        _tinyidpContext.Remove(token);
-        _tinyidpContext.SaveChanges();
+        using var context = _tinyidpContext.CreateDbContext();
+        context.Remove(token);
+        context.SaveChanges();
     }
 
     public void Update(Token token)
     {
-        _tinyidpContext.Update(token);
-        _tinyidpContext.SaveChanges();
+        using var context = _tinyidpContext.CreateDbContext();
+        context.Update(token);
+        context.SaveChanges();
     }
 }

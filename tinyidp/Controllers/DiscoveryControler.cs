@@ -42,7 +42,7 @@ public class DiscoveryController
 
         };
 
-        return Results.Json(response);
+        return Results.Json(response, TinyIdpJsonSerializerContext.Default.DiscoveryResponse);
     }
 
 }

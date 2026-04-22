@@ -83,7 +83,7 @@ else if (certificateEdit != null && certificateEdit.CanAccess && !isLoading)
                         <div class="form-group">
                             <InputSelect id="State" @bind-Value="certificateEdit.State" class="form-control">
                                 <option value="">Choose a State</option>
-                                @foreach (var value in Enum.GetValues(typeof(StateCredential)))
+                                @foreach (var value in Enum.GetValues<StateCredential>())
                                 {
                                     <option value="@value">@value</option>
                                 }

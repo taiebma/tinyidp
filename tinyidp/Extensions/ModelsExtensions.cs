@@ -28,44 +28,49 @@ public static class ModelsExtensions
         };
     }
 
-    public static CredentialBusinessEntity ToBusiness(this CredentialEditModel entity)
+    public static CredentialBusinessEntity ToBusiness(this CredentialEditModel entity, CredentialBusinessEntity? existingEntity = null)
     {
-        return new CredentialBusinessEntity() {
-            Id = entity.Id,
-            Ident = entity.Ident, 
-            Pass = entity.Pass,
-            PassNew  = entity.PassNew,
-            State = entity.State, 
-            NbMaxRenew = entity.NbMaxRenew, 
-            RefreshMaxMinuteValidity = entity.RefreshMaxMinuteValidity, 
-            RoleIdent = entity.RoleIdent, 
-            TokenMaxMinuteValidity = entity.TokenMaxMinuteValidity, 
-            CreationDate = entity.CreationDate,
-            LastIdent = entity.LastIdent,
-            AllowedScopes = entity.AllowedScopes?.Split(' ')??new string[0],
-            Audiences = entity.Audiences?.Split(' ')??new string[0],
-            AuthorizationCode = entity.AuthorizationCode,
-            RedirectUri = entity.RedirectUri, 
-            KeyType = entity.KeyType??AlgoKeyType.None
-        };
-    }
+        if (existingEntity == null)
+        {
+            return new CredentialBusinessEntity() {
+                Id = entity.Id,
+                Ident = entity.Ident, 
+                Pass = entity.Pass,
+                PassNew = entity.Pass, 
+                State = entity.State, 
+                NbMaxRenew = entity.NbMaxRenew, 
+                RefreshMaxMinuteValidity = entity.RefreshMaxMinuteValidity, 
+                RoleIdent = entity.RoleIdent, 
+                TokenMaxMinuteValidity = entity.TokenMaxMinuteValidity,
+                CreationDate = entity.CreationDate,
+                LastIdent = entity.LastIdent,
+                AllowedScopes = entity.AllowedScopes?.Split(' ')??new string[0],
+                Audiences = entity.Audiences?.Split(' ')??new string[0],
+                AuthorizationCode = entity.AuthorizationCode,
+                RedirectUri = entity.RedirectUri, 
+                KeyType = entity.KeyType??AlgoKeyType.None
+            };
+        }
+        else
+        {
+            existingEntity.Ident = entity.Ident;
+            existingEntity.Pass = entity.Pass;
+            existingEntity.PassNew = entity.Pass;
+            existingEntity.State = entity.State;
+            existingEntity.NbMaxRenew = entity.NbMaxRenew;
+            existingEntity.RefreshMaxMinuteValidity = entity.RefreshMaxMinuteValidity;
+            existingEntity.RoleIdent = entity.RoleIdent;
+            existingEntity.TokenMaxMinuteValidity = entity.TokenMaxMinuteValidity;
+            existingEntity.CreationDate = entity.CreationDate;
+            existingEntity.LastIdent = entity.LastIdent;
+            existingEntity.AllowedScopes = entity.AllowedScopes?.Split(' ')??new string[0];
+            existingEntity.Audiences = entity.Audiences?.Split(' ')??new string[0];
+            existingEntity.AuthorizationCode = entity.AuthorizationCode;
+            existingEntity.RedirectUri = entity.RedirectUri; 
+            existingEntity.KeyType = entity.KeyType??AlgoKeyType.None;
+            return existingEntity;
+        }
 
-    public static CredentialCreateModel ToModelCreate(this CredentialBusinessEntity entity)
-    {
-        return new CredentialCreateModel() {
-            Ident = entity.Ident, 
-            Pass = entity.Pass, 
-            State = (StateCredential)Enum.Parse(typeof(StateCredential),entity.State.ToString()), 
-            NbMaxRenew = entity.NbMaxRenew, 
-            RefreshMaxMinuteValidity = entity.RefreshMaxMinuteValidity, 
-            RoleIdent = (RoleCredential)Enum.Parse(typeof(RoleCredential),entity.RoleIdent.ToString()), 
-            TokenMaxMinuteValidity = entity.TokenMaxMinuteValidity,
-            AllowedScopes = string.Join(' ', entity.AllowedScopes??new List<string>()),
-            Audiences = string.Join(' ', entity.Audiences??new List<string>()),
-            AuthorizationCode = entity.AuthorizationCode,
-            RedirectUri = entity.RedirectUri, 
-            KeyType = entity.KeyType
-        };
     }
 
     public static CredentialEditModel ToModelEdit(this CredentialBusinessEntity entity)
@@ -100,15 +105,6 @@ public static class ModelsExtensions
             PassNew = entity.Pass
         };
     }
-    public static CredentialBusinessEntity ToBusiness(this ChangePwdModel entity)
-    {
-        return new CredentialBusinessEntity() {
-            Id = entity.Id,
-            Ident = entity.Ident, 
-            Pass = entity.Pass, 
-            PassNew = entity.Pass
-        };
-    }
 
     public static CredentialView ToModelView(this CredentialBusinessEntity entity)
     {
@@ -131,13 +127,14 @@ public static class ModelsExtensions
     {
         if (en == null) return String.Empty;
 
-        var type = en.GetType();
-
-        var memberInfo = type.GetMember(en.ToString());
-        var description = (memberInfo[0].GetCustomAttributes(typeof(DescriptionAttribute),
-            false).FirstOrDefault() as DescriptionAttribute)?.Description??String.Empty;
-
-        return description;
+        return en switch
+        {
+            StateCredential.Active => "Active",
+            StateCredential.Inactive => "Inactive",
+            RoleCredential.Admin => "Admin",
+            RoleCredential.User => "User",
+            _ => string.Empty
+        };        
     }
 
     public static KidView ToModelView(this KidBusinessEntity entity)
@@ -285,18 +282,6 @@ public static class ModelsExtensions
             existingEntity.IdClient = certificate.IdClient;
             return existingEntity;
         }
-    }
-
-    public static CertificateCreateModel ToModelCreate(this CertificateBusinessEntity certificate)
-    {
-        return new CertificateCreateModel() {
-            ValidityDate = certificate.ValidityDate, 
-            Dn = certificate.Dn, 
-            Issuer = certificate.Issuer, 
-            Serial = certificate.Serial, 
-            State = Enum.Parse<StateCredential>(certificate.State.ToString()), 
-            IdClient = certificate.IdClient
-        };
     }
 
     public static CertificateEditModel ToModelEdit(this CertificateBusinessEntity certificate)

@@ -53,8 +53,7 @@ public class AuthController : ControllerBase
 
             // Mettre à jour la dernière connexion
             user.LastIdent = DateTime.Now;
-            _credentialBusiness.Update(user.ToBusiness());
-            //await _credentialBusiness.SaveChanges();
+            await _credentialBusiness.Update(user.ToBusiness());
 
             // Créer les claims
             var claims = new List<Claim>

@@ -201,7 +201,7 @@ public class KeysManagment : IKeysManagment
 
     public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime, string? nonce)
     {
-        string issuer = _conf.GetSection("TINYIDP_IDP")?.GetValue<string>("BASE_URL_IDP")??"https://localhost:7034/";
+        string issuer = _conf["TINYIDP_IDP:BASE_URL_IDP"]??"https://localhost:7034/";
         var claims = new List<Claim>
         {
             new Claim("scope", string.Join(' ', scopes))

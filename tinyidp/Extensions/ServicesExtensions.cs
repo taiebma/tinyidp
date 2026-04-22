@@ -8,24 +8,13 @@ public static class TinyidpServicesExtensions
 {
    public static IServiceCollection AddTokenStrategies(this IServiceCollection services)
    {
-       services.AddTransient<ITokenService, TokenService>();
-      
-       var tokenTypes = AppDomain.CurrentDomain.GetAssemblies()
-           .SelectMany(assembly => assembly.GetTypes())
-           .Where(type =>
-               typeof(ITokenStrategy).IsAssignableFrom(type)
-               && !type.IsInterface
-               && !type.IsAbstract);
+        services.AddTransient<ITokenService, TokenService>();
 
-       foreach (var tokenType in tokenTypes)
-       {
-           TokenTypeEnum type =
-               (TokenTypeEnum) tokenType!
-                   .GetProperty("Type")!
-                   .GetValue(null, null)!;
-           services.AddKeyedTransient(typeof(ITokenStrategy), type, tokenType);
-       }
-      
-       return services;
+        services.AddKeyedTransient<ITokenStrategy, RefreshToken>(TokenTypeEnum.refresh_token);
+        services.AddKeyedTransient<ITokenStrategy, TokenAuthorizationCode>(TokenTypeEnum.code);
+        services.AddKeyedTransient<ITokenStrategy, TokenAuthorizationCode>(TokenTypeEnum.authorization_code);
+        services.AddKeyedTransient<ITokenStrategy, TokenClientCredential>(TokenTypeEnum.client_credential);
+
+        return services;      
    }
 }

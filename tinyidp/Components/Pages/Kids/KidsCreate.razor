@@ -43,7 +43,7 @@ else if (kidCreate != null && kidCreate.CanAccess && !isLoading)
                         <div class="form-group">
                             <InputSelect id="Algo" @bind-Value="kidCreate.Algo" class="form-control">
                                 <option value="">Choose algo</option>
-                                @foreach (var value in Enum.GetValues(typeof(AlgoType)))
+                                @foreach (var value in Enum.GetValues<AlgoType>())
                                 {
                                     <option value="@value">@value</option>
                                 }

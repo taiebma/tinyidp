@@ -73,7 +73,7 @@ else if (kidEdit != null && kidEdit.CanAccess && !isLoading)
                         <div class="form-group">
                             <InputSelect id="State" @bind-Value="kidEdit.State" class="form-control">
                                 <option value="">Choose a State</option>
-                                @foreach (var value in Enum.GetValues(typeof(KidState)))
+                                @foreach (var value in Enum.GetValues<KidState>())
                                 {
                                     <option value="@value">@value</option>
                                 }

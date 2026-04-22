@@ -105,6 +105,12 @@
         errorMessage = string.Empty;
         isSubmitting = true;
 
+        if (HttpContextAccessor == null || HttpContextAccessor.HttpContext == null)
+        {
+            errorMessage = "Unable to access HTTP context.";
+            isSubmitting = false;
+            return;
+        }
         try
         {
             if (string.IsNullOrWhiteSpace(model?.Login) || string.IsNullOrWhiteSpace(model.Password))
