@@ -2,7 +2,7 @@ using tinyidp.Business.Credential;
 using tinyidp.infrastructure.bdd;
 using tinyidp.Encryption;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using tinyidp.infrastructure.keysmanagment;
+using tinyidp.Business.keysmanagment;
 using tinyidp.WebAuthent.Modules;
 using tinyidp.Extensions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -18,6 +18,9 @@ using tinyidp.Business.BusinessEntities;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using tinyidp.Controllers.Models;
+using System.Threading.RateLimiting;
+using tinyidp.Business.tokens;
+using tinyidp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +39,21 @@ builder.Services.AddCors(options =>
         o.AllowAnyMethod();
     });
 });
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("ApiPolicy", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "global",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 600, // 10 requêtes
+                Window = TimeSpan.FromMinutes(1), // par minute
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 5
+            }));
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -47,7 +65,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddResponseCompression();
 builder.Services.AddHealthChecks();
 
-builder.Services.AddPooledDbContextFactory<TinyidpContext>((serviceProvider, options) =>
+builder.Services.AddDbContextPool<TinyidpContext>((serviceProvider, options) =>
 {
     BddConfig? conf = builder.Configuration?.GetSection("TINYIDP_BDDCONFIG").Get<BddConfig>();
 
@@ -67,8 +85,10 @@ builder.Services.AddPooledDbContextFactory<TinyidpContext>((serviceProvider, opt
         LogLevel.Information,
         DbContextLoggerOptions.SingleLine | DbContextLoggerOptions.UtcTime
     );
+#if DEBUG
     options.EnableSensitiveDataLogging();
-}
+#endif
+    }
 );
 
 //builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -140,6 +160,10 @@ var app = builder.Build();
 Console.WriteLine($"=== ENVIRONMENT: {app.Environment.EnvironmentName} ===");
 Console.WriteLine($"=== IS DEVELOPMENT: {app.Environment.IsDevelopment()} ===");
 
+app.UseRateLimiter();
+var csp = app.Environment.IsDevelopment()
+    ? "default-src 'self' https://cdn.jsdelivr.net; connect-src 'self' ws://localhost:*"
+    : "default-src 'self' https://cdn.jsdelivr.net";
 app.Use((context, next) =>
 {
         context.Response.Headers["X-Frame-Options"] = "DENY";
@@ -154,8 +178,8 @@ app.Use((context, next) =>
 
         context.Response.Headers["Permissions-Policy"] = "camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), usb=()";
 
-        context.Response.Headers["Content-Security-Policy"] =
-            "default-src 'self'";
+        context.Response.Headers["Content-Security-Policy"] = csp;
+        
         return next();
 });
 
@@ -169,7 +193,6 @@ if (app.Environment.IsDevelopment())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -208,22 +231,63 @@ app.MapPost("/account/login-handler", async (
     }
 
     return Results.Redirect("/account/login?error=invalid");
-}).DisableAntiforgery(); // ou gérez l'antiforgery manuellement
+}).RequireRateLimiting("ApiPolicy").DisableAntiforgery(); // ou gérez l'antiforgery manuellement
 
-app.MapGet("/oauth/.well-known/openid-configuration", (HttpContext context) => DiscoveryController.GetConfiguration).WithName("WellKnown")
-    .Produces<DiscoveryResponse>(StatusCodes.Status200OK);
-app.MapGet("/oauth/keys/jwks.json", (HttpContext context) => KeysController.Jwks).WithName("Jwks")
-    .Produces<KeysResponse>(StatusCodes.Status200OK);
-app.MapPost("/oauth/token", (HttpContext context, TokenRequestBusiness request) => OAuthController.GetToken).WithName("GetToken").DisableAntiforgery()
-    .Accepts<TokenRequestBusiness>("application/json")
-    .Produces<TokenResponseBusiness>(StatusCodes.Status200OK);
-app.MapGet("/oauth/authorize", (HttpContext context, string client_id, string redirect_uri, string response_type, string? scope, string? state) => OAuthController.Authorize).WithName("Authorize");
+app.MapGet("/oauth/.well-known/openid-configuration", DiscoveryController.GetConfiguration).WithName("WellKnown")
+    .Produces<DiscoveryResponse>(StatusCodes.Status200OK).RequireRateLimiting("ApiPolicy");
+app.MapGet("/oauth/keys/jwks.json", KeysController.Jwks).WithName("Jwks")
+    .Produces<KeysResponse>(StatusCodes.Status200OK).RequireRateLimiting("ApiPolicy");
+app.MapPost("/oauth/token", 
+    (   [FromForm] TokenRequest request, 
+        ITokenService tokenService, 
+        IHttpContextAccessor context) => 
+    OAuthController.GetToken(
+        request, 
+        tokenService, 
+        context))
+    .WithName("GetToken")
+    .DisableAntiforgery()
+    .Accepts<TokenRequestBusiness>("multipart/form-data")
+    .Produces<TokenResponseBusiness>(StatusCodes.Status200OK)
+    .RequireRateLimiting("ApiPolicy");
+app.MapGet("/oauth/authorize", 
+    (   string client_id, 
+        string redirect_uri, 
+        string response_type, 
+        string? scope, 
+        string? state, 
+        string? nonce, 
+        string? code_challenge, 
+        string? code_challenge_method, 
+        IHttpContextAccessor context, 
+        ICredentialBusiness credentialBusiness) => 
+    OAuthController.Authorize(
+        response_type, 
+        client_id, 
+        redirect_uri, 
+        scope, 
+        state, 
+        nonce, 
+        code_challenge, 
+        code_challenge_method, 
+        context, 
+        credentialBusiness))
+    .WithName("Authorize")
+    .RequireRateLimiting("ApiPolicy");
 app.MapGet("/oauth/userinfo", (HttpContext context) => OAuthController.UserInfo).WithName("UserInfo")
     .Produces<tinyidp.Business.BusinessEntities.AppUser>(StatusCodes.Status200OK)
-    .RequireAuthorization();
+    .RequireAuthorization()
+    .RequireRateLimiting("ApiPolicy");
+app.MapGet("/pkce/challenge", (string code_verifier, IPKCEService pkceService) => PkceController.GenerateChallenge(pkceService, code_verifier )).WithName("PKCEChallenge")
+    .RequireRateLimiting("ApiPolicy");
+app.MapGet("/pkce/challenge/verifier", (int? size, IPKCEService pkceService) => PkceController.GenerateVerifierCode(pkceService, size )).WithName("PKCEVerifier")
+    .RequireRateLimiting("ApiPolicy");
 app.MapHealthChecks("/health");
 
-//app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 
 app.UseResponseCompression();

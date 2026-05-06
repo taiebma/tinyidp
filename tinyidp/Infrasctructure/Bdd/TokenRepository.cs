@@ -6,31 +6,28 @@ namespace tinyidp.infrastructure.bdd;
 
 public class TokenRepository : ITokenRepository
 {
-    private readonly IDbContextFactory<TinyidpContext> _tinyidpContext;
-    
-    public TokenRepository( IDbContextFactory<TinyidpContext> tinyidpContext)
+    private readonly TinyidpContext _tinyidpContext;
+
+    public TokenRepository(TinyidpContext tinyidpContext)
     {
         _tinyidpContext = tinyidpContext;
     }
 
     public void Add(Token token)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Add(token);
-        context.SaveChanges();
+        _tinyidpContext.Tokens.Add(token);
+        _tinyidpContext.SaveChanges();
     }
 
     public void Remove(Token token)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Remove(token);
-        context.SaveChanges();
+        _tinyidpContext.Tokens.Remove(token);
+        _tinyidpContext.SaveChanges();
     }
 
     public void Update(Token token)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Update(token);
-        context.SaveChanges();
+        _tinyidpContext.Tokens.Update(token);
+        _tinyidpContext.SaveChanges();
     }
 }

@@ -7,7 +7,7 @@ using tinyidp.Business.Credential;
 using tinyidp.Business.tokens;
 using tinyidp.Exceptions;
 using tinyidp.infrastructure.bdd;
-using tinyidp.infrastructure.keysmanagment;
+using tinyidp.Business.keysmanagment;
 
 namespace tinyidp.tests;
 

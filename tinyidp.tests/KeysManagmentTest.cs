@@ -9,7 +9,7 @@ using tinyidp.Business.BusinessEntities;
 using tinyidp.Encryption;
 using tinyidp.Exceptions;
 using tinyidp.infrastructure.bdd;
-using tinyidp.infrastructure.keysmanagment;
+using tinyidp.Business.keysmanagment;
 
 namespace tinyidp.tests;
 

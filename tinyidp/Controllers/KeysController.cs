@@ -4,16 +4,16 @@ using Microsoft.IdentityModel.Tokens;
 using tinyidp.Business.BusinessEntities;
 using tinyidp.Controllers.Models;
 using tinyidp.Extensions;
-using tinyidp.infrastructure.keysmanagment;
+using tinyidp.Business.keysmanagment;
 
 namespace tinyidp.Controllers;
 
 public class KeysController
 {
 
-    public static IResult Jwks([FromServices] IKeysManagment _keyManagment)
+    public static async Task<IResult> Jwks([FromServices] IKeysManagment _keyManagment)
     {
-        List<KidBusinessEntity> kids = _keyManagment.GetActiveKeys();
+        List<KidBusinessEntity> kids = await _keyManagment.GetActiveKeys();
         KeysResponse resp = new KeysResponse();
         resp.Keys = kids.Select(
             p => {

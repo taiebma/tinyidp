@@ -6,7 +6,7 @@ namespace tinyidp.infrastructure.bdd;
 
 public class CredentialRepository : ICredentialRepository
 {
-    private readonly IDbContextFactory<TinyidpContext> _tinyidpContext;
+    private readonly TinyidpContext _tinyidpContext;
     private readonly ICacheTinyidp<Credential> _cache;
     private readonly BackgroundSaveDB _backgroundSaveDB;
 
@@ -23,7 +23,7 @@ public class CredentialRepository : ICredentialRepository
             EF.CompileAsyncQuery((TinyidpContext context,  string token) =>
             context.Credentials.Where(u => u.RefreshToken == token).AsNoTracking().FirstOrDefault());
 
-    public CredentialRepository( IDbContextFactory<TinyidpContext> tinyidpContext, ICacheTinyidp<Credential> cache, BackgroundSaveDB backgroundSaveDB)
+    public CredentialRepository( TinyidpContext tinyidpContext, ICacheTinyidp<Credential> cache, BackgroundSaveDB backgroundSaveDB)
     {
         _tinyidpContext = tinyidpContext;
         _cache = cache;
@@ -33,97 +33,85 @@ public class CredentialRepository : ICredentialRepository
     public void Add(Credential credential)
     {
         _cache.Set(credential.Ident, credential);
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Credentials.Add(credential);
-        context.SaveChanges();
+        _tinyidpContext.Credentials.Add(credential);
+        _tinyidpContext.SaveChanges();
     }
 
     public void Remove(Credential credential)
     {
         _cache.Remove(credential.Ident);
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Credentials.Remove(credential);
-        context.SaveChanges();
+        _tinyidpContext.Credentials.Remove(credential);
+        _tinyidpContext.SaveChanges();
     }
 
     public void Update(Credential credential)
     {
         _cache.Set(credential.Ident, credential);
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Credentials.Update(credential);
-        context.SaveChanges();
+        _tinyidpContext.Credentials.Update(credential);
+        _tinyidpContext.SaveChanges();
     }
 
-    public Credential? GetById(int id)
+    public async Task<Credential?> GetById(int id)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return context.Credentials
+        return await _tinyidpContext.Credentials
             .Where<Credential>(p => p.Id == id)
-            .FirstOrDefault();
+            .FirstOrDefaultAsync();
     }
 
-    public Credential? GetByIdent(string ident)
+    public async Task<Credential?> GetByIdent(string ident)
     {
-        using var context = _tinyidpContext.CreateDbContext();
         var cached = _cache.Get(ident);
         if (cached != null)
         {
-            context.Credentials.Attach(cached);
+            _tinyidpContext.Credentials.Attach(cached);
             return cached;
         }
-        return _getByIdent(context, ident).Result;
+        return await _getByIdent(_tinyidpContext, ident);
     }
 
-    public Credential? GetByIdReadOnly(int id)
+    public async Task<Credential?> GetByIdReadOnly(int id)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return context.Credentials
+        return await _tinyidpContext.Credentials
             .Where<Credential>(p => p.Id == id).AsNoTracking()
-            .FirstOrDefault();
+            .FirstOrDefaultAsync();
     }
 
-    public Credential? GetWithCertificates(int id)
+    public async Task<Credential?> GetWithCertificates(int id)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return context.Credentials
+        return await _tinyidpContext.Credentials
             .Where<Credential>(p => p.Id == id)
             .AsNoTracking()
             .Include(p => p.Certificates)
-            .FirstOrDefault();
+            .FirstOrDefaultAsync();
     }
 
-    public Task<Credential?> GetByIdentReadOnly(string ident)
+    public async Task<Credential?> GetByIdentReadOnly(string ident)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return _getByIdentReadonly(context, ident);
+        return await _getByIdentReadonly(_tinyidpContext, ident);
     }
 
-    public Task<List<Credential>> SearchByIdentLike(string ident)
+    public async Task<List<Credential>> SearchByIdentLike(string ident)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return context.Credentials
+        return await _tinyidpContext.Credentials
             .Where<Credential>(p => p.Ident.Contains(ident))
             .AsNoTracking()
             .OrderBy(p => p.Id)
             .ToListAsync();
     }
 
-    public Task<Credential?> GetByAuthorizationCode(string code)
+    public async Task<Credential?> GetByAuthorizationCode(string code)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return _getByAuthorizationCode(context, code);
+        return await _getByAuthorizationCode(_tinyidpContext, code);
     }
 
-    public Task<Credential?> GetByRefreshToken(string token)
+    public async Task<Credential?> GetByRefreshToken(string token)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return _getByRefreshToken(context, token);
+        return await _getByRefreshToken(_tinyidpContext, token);
     }
 
-    public Task<List<Credential>> SearchByState(int state )
+    public async Task<List<Credential>> SearchByState(int state )
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return context.Credentials
+        return await _tinyidpContext.Credentials
             .Where<Credential>(p => p.State == state)
             .AsNoTracking()
             .OrderBy(p => p.Id)
@@ -132,14 +120,12 @@ public class CredentialRepository : ICredentialRepository
 
     public async Task<List<Credential>> GetAll( )
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return await context.Credentials.AsNoTracking().OrderBy(p => p.Id).ToListAsync();
+        return await _tinyidpContext.Credentials.AsNoTracking().OrderBy(p => p.Id).ToListAsync();
     }
 
-    public Task<Credential?> GetCredentialByCertificate(string serial, string issuer)
+    public async Task<Credential?> GetCredentialByCertificate(string serial, string issuer)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return context.Credentials.Where(
+        return await _tinyidpContext.Credentials.Where(
             p => p.Certificates.Any(c => c.Issuer == issuer && c.Serial == serial))
             .AsNoTracking()
             .FirstOrDefaultAsync();
@@ -147,14 +133,12 @@ public class CredentialRepository : ICredentialRepository
 
     public async Task<int> SaveChanges()
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return await context.SaveChangesAsync();
+        return await _tinyidpContext.SaveChangesAsync();
     }
 
     public void DeferredSaveChanges()
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.ChangeTracker.Entries<Credential>()
+        _tinyidpContext.ChangeTracker.Entries<Credential>()
             .Where(e => e.State == EntityState.Modified)
             .ToList()
             .ForEach(e => {

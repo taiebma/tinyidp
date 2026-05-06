@@ -6,38 +6,34 @@ namespace tinyidp.infrastructure.bdd;
 
 public class KidRepository : IKidRepository
 {
-    private readonly IDbContextFactory<TinyidpContext> _tinyidpContext;
+    private readonly TinyidpContext _tinyidpContext;
     
-    public KidRepository( IDbContextFactory<TinyidpContext> tinyidpContext)
+    public KidRepository( TinyidpContext tinyidpContext)
     {
         _tinyidpContext = tinyidpContext;
     }
 
     public void Add(Kid kid)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Add(kid);
-        context.SaveChanges();
+        _tinyidpContext.Kids.Add(kid);
+        _tinyidpContext.SaveChanges();
     }
 
     public void Remove(Kid kid)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Remove(kid);
-        context.SaveChanges();
+        _tinyidpContext.Kids.Remove(kid);
+        _tinyidpContext.SaveChanges();
     }
 
     public void Update(Kid kid)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Update(kid);
-        context.SaveChanges();
+        _tinyidpContext.Kids.Update(kid);
+        _tinyidpContext.SaveChanges();
     }
 
-    public Task<List<Kid>> GetAll( )
+    public async Task<List<Kid>> GetAll( )
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return context.Kids.OrderBy(p => p.CreationDate).AsNoTracking().ToListAsync();
+        return await _tinyidpContext.Kids.OrderBy(p => p.CreationDate).AsNoTracking().ToListAsync();
     }
 
 }

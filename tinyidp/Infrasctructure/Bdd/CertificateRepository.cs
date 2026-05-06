@@ -6,73 +6,64 @@ namespace tinyidp.infrastructure.bdd;
 
 public class CertificateRepository : ICertificateRepository
 {
-    private readonly IDbContextFactory<TinyidpContext> _tinyidpContext;
+    private readonly TinyidpContext _tinyidpContext;
     
-    public CertificateRepository( IDbContextFactory<TinyidpContext> tinyidpContext)
+    public CertificateRepository( TinyidpContext tinyidpContext)
     {
         _tinyidpContext = tinyidpContext;
     }
 
     public void Add(Certificate certificate)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Certificates.Add(certificate);
-        context.SaveChanges();
+        _tinyidpContext.Certificates.Add(certificate);
+        _tinyidpContext.SaveChanges();
     }
 
     public void Remove(Certificate certificate)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Certificates.Remove(certificate);
-        context.SaveChanges();
+        _tinyidpContext.Certificates.Remove(certificate);
+        _tinyidpContext.SaveChanges();
     }
 
     public void Update(Certificate certificate)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.Certificates.Update(certificate);
-        context.SaveChanges();
+        _tinyidpContext.Certificates.Update(certificate);
+        _tinyidpContext.SaveChanges();
     }
 
-    public Task<Certificate?> Get(int id)
+    public async Task<Certificate?> Get(int id)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return context.Certificates.Where(p => p.Id == id)
+        return await _tinyidpContext.Certificates.Where(p => p.Id == id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
     }
 
-    public Task<List<TrustStore>> GetTrustStore()
+    public async Task<List<TrustStore>> GetTrustStore()
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return context.TrustStore.AsNoTracking().OrderBy(p => p.Dn).ToListAsync();
+        return await _tinyidpContext.TrustStore.AsNoTracking().OrderBy(p => p.Dn).ToListAsync();
     }
 
     public void AddTrustCertificate(TrustStore certificate)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.TrustStore.Add(certificate);
-        context.SaveChanges();
+        _tinyidpContext.TrustStore.Add(certificate);
+        _tinyidpContext.SaveChanges();
     }
 
     public void RemoveTrustCertificate(TrustStore certificate)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.TrustStore.Remove(certificate);
-        context.SaveChanges();
+        _tinyidpContext.TrustStore.Remove(certificate);
+        _tinyidpContext.SaveChanges();
     }
 
     public void UpdateTrustCertificate(TrustStore certificate)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        context.TrustStore.Update(certificate);
-        context.SaveChanges();
+        _tinyidpContext.TrustStore.Update(certificate);
+        _tinyidpContext.SaveChanges();
     }
 
-    public Task<TrustStore?> GetTrustCertificate(int id)
+    public async Task<TrustStore?> GetTrustCertificate(int id)
     {
-        using var context = _tinyidpContext.CreateDbContext();
-        return context.TrustStore.Where(p => p.Id == id)
+        return await _tinyidpContext.TrustStore.Where(p => p.Id == id)
             .AsNoTracking()
             .FirstOrDefaultAsync();
     }

@@ -13,7 +13,7 @@ using tinyidp.infrastructure.bdd;
 using tinyidp.Exceptions;
 using System.Text.Json.Serialization;
 
-namespace tinyidp.infrastructure.keysmanagment;
+namespace tinyidp.Business.keysmanagment;
 
 public class KeysManagment : IKeysManagment
 {
@@ -23,8 +23,6 @@ public class KeysManagment : IKeysManagment
     private readonly IKidRepository _kidRepository;
     private readonly IMemoryCache _memoryCache;
     
-    private List<KidBusinessEntity>? _listKeys;
-
     public KeysManagment(
         IConfiguration conf, 
         ILogger<KeysManagment> logger, 
@@ -37,45 +35,45 @@ public class KeysManagment : IKeysManagment
         _encryptionService = encryptionService;
         _kidRepository = repoKid;
         _memoryCache = memCache;
-        _listKeys = new List<KidBusinessEntity>();
-
-        if (!_memoryCache.TryGetValue("keys", out _listKeys))
-        {
-            Task<List<Kid>> kids =  _kidRepository.GetAll();
-            if (kids.Result.Count == 0)
-            {
-                _listKeys = new List<KidBusinessEntity>();
-            }
-            else
-            {
-                _listKeys = kids.Result.Select(p => p.ToBusiness(_encryptionService)).ToList();
-            }
-            _memoryCache.Set("keys", _listKeys, DateTime.Now.AddHours(1));
-        }
         
     }
 
-    public List<KidBusinessEntity> GetKeys()
+    public async Task<List<KidBusinessEntity>> GetKeys()
     {
-        return _listKeys??new List<KidBusinessEntity>();
+        List<KidBusinessEntity>? keys;
+        if (!_memoryCache.TryGetValue("keys", out keys))
+        {
+            List<Kid> kids =  await _kidRepository.GetAll();
+            if (kids.Count == 0)
+            {
+                keys = new List<KidBusinessEntity>();
+            }
+            else
+            {
+                keys = kids.Select(p => p.ToBusiness(_encryptionService)).ToList();
+            }
+            _memoryCache.Set("keys", keys, DateTime.Now.AddHours(1));
+        }
+        return keys??new List<KidBusinessEntity>();
     }
 
-    public List<KidBusinessEntity> GetActiveKeys()
+    public async Task<List<KidBusinessEntity>> GetActiveKeys()
     {
-        return _listKeys?.Where(p => p.State == KidState.Active && p.Valid == true).ToList()??new List<KidBusinessEntity>();
+        var keys = await GetKeys();
+        return keys.Where(p => p.State == KidState.Active && p.Valid == true).ToList()??new List<KidBusinessEntity>();
     }
 
-    public KidBusinessEntity GenNewKey(AlgoType algo, string kid)
+    public async Task<KidBusinessEntity> GenNewKey(AlgoType algo, string kid)
     {
         KidBusinessEntity key;
 
         switch (algo )
         {
             case AlgoType.RSA:
-                key = GenNewRSAKey(kid);
+                key = await GenNewRSAKey(kid);
                 break;
             case AlgoType.ECC:
-                key = GenNewECCKey(kid);
+                key = await GenNewECCKey(kid);
                 break;
             default:
                 throw new TinyidpKeyException("Algorithm unknown");
@@ -83,7 +81,7 @@ public class KeysManagment : IKeysManagment
         return key;
     }
 
-    public KidBusinessEntity GenNewRSAKey(string kid)
+    public async Task<KidBusinessEntity> GenNewRSAKey(string kid)
     {
         using var rsa = RSA.Create(2048);
         KidBusinessEntity newkid = new KidBusinessEntity();
@@ -104,22 +102,19 @@ public class KeysManagment : IKeysManagment
         Kid kidEntity = newkid.ToEntity(_encryptionService);
         _kidRepository.Add(kidEntity);
 
-        if (_listKeys == null)
-        {
-            GetKeys();
-        }
-        else
+        var keys = await GetKeys();
+        if (keys != null)
         {
             newkid.Id = kidEntity.Id;
             newkid.Valid = true;
-            _listKeys.Add(newkid);
-            _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
+            keys.Add(newkid);
+            _memoryCache.Set("keys", keys, DateTime.Now.AddMinutes(5));
         }
 
         return newkid;
     }
 
-    public KidBusinessEntity GenNewECCKey(string kid)
+    public async Task<KidBusinessEntity> GenNewECCKey(string kid)
     {
         using var ecc = ECDsa.Create(ECCurve.NamedCurves.nistP256);
         KidBusinessEntity newkid = new KidBusinessEntity();
@@ -140,66 +135,68 @@ public class KeysManagment : IKeysManagment
         Kid kidEntity = newkid.ToEntity(_encryptionService);
         _kidRepository.Add(kidEntity);
 
-        if (_listKeys == null)
-        {
-            GetKeys();
-        }
-        else
+        var keys = await GetKeys();
+        if (keys != null)
         {
             newkid.Id = kidEntity.Id;
             newkid.Valid = true;
-            _listKeys.Add(newkid);
-            _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
+            keys.Add(newkid);
+            _memoryCache.Set("keys", keys, DateTime.Now.AddMinutes(5));
         }
 
         return newkid;
     }
 
-    public KidBusinessEntity? GetKeyByKid(string kid)
+    public async Task<KidBusinessEntity?> GetKeyByKid(string kid)
     {
-        return _listKeys?.Where(p => p.Kid1  == kid).FirstOrDefault();
+        var keys = await GetKeys();
+        return keys.Where(p => p.Kid1 == kid).FirstOrDefault();
     }
 
-    public KidBusinessEntity? GetKeyById(int id)
+    public async Task<KidBusinessEntity?> GetKeyById(int id)
     {
-        return _listKeys?.Where(p => p.Id  == id).FirstOrDefault();
+        var keys = await GetKeys();
+        return keys.Where(p => p.Id == id).FirstOrDefault();
     }
 
-    public KidBusinessEntity? LastActive(AlgoType algo)
+    public async Task<KidBusinessEntity?> LastActive(AlgoType algo)
     {
-        if (_listKeys == null)
+        var keys = await GetKeys();
+        if (keys == null)
         {
             throw new Exception("No keys");
         }
-        return _listKeys.LastOrDefault(p => p.Algo == algo 
+        return keys.LastOrDefault(p => p.Algo == algo 
             && p.State == KidState.Active
             && p.Valid);
     }
 
-    public void Update(KidBusinessEntity kid)
+    public async Task Update(KidBusinessEntity kid)
     {
-        if (_listKeys == null)
+        var keys = await GetKeys();
+        if (keys == null)
         {
             return;
         }
-        KidBusinessEntity curKid = _listKeys.First(p => p.Id == kid.Id);
+        KidBusinessEntity curKid = keys.First(p => p.Id == kid.Id);
         curKid.State = kid.State;
         _kidRepository.Update(curKid.ToEntity(_encryptionService));
-        _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
+        _memoryCache.Set("keys", keys, DateTime.Now.AddMinutes(5));
     }
 
-    public void Remove(KidBusinessEntity kid)
+    public async Task Remove(KidBusinessEntity kid)
     {
-        if (_listKeys == null)
+        var keys = await GetKeys();
+        if (keys == null)
         {
             return;
         }
         _kidRepository.Remove(kid.ToEntity(_encryptionService));
-        _listKeys.Remove(_listKeys.Where(p => p.Id == kid.Id).First());
-        _memoryCache.Set("keys", _listKeys, DateTime.Now.AddMinutes(5));
+        keys.Remove(keys.Where(p => p.Id == kid.Id).First());
+        _memoryCache.Set("keys", keys, DateTime.Now.AddMinutes(5));
     }
 
-    public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime, string? nonce)
+    public async Task<string> GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime, string? nonce)
     {
         string issuer = _conf["TINYIDP_IDP:BASE_URL_IDP"]??"https://localhost:7034/";
         var claims = new List<Claim>
@@ -227,7 +224,7 @@ public class KeysManagment : IKeysManagment
 
         RSACryptoServiceProvider provider1 = new RSACryptoServiceProvider();
 
-        KidBusinessEntity? lastKid = LastActive(keyType.ToAlgoType());
+        KidBusinessEntity? lastKid = await LastActive(keyType.ToAlgoType());
         SigningCredentials signingCredentials;
 
         if (lastKid == null)

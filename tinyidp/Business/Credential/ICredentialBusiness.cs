@@ -17,13 +17,13 @@ public interface ICredentialBusiness
     public  Task<CredentialBusinessEntity?> GetCredentialBusinessEntityByIdent(string ident);
     public Task<infrastructure.bdd.Credential?> GetByAuthorizationCode(string code);
     public Task<infrastructure.bdd.Credential?> GetByRefreshToken(string token);
-    public infrastructure.bdd.Credential Get(int id);
+    public Task<infrastructure.bdd.Credential> Get(int id);
     public Task<bool> VerifyPassword(string login, string pass);
     public bool CheckPassword(string entityPass, string pass);
     public Task<CredentialBusinessEntity> Authorize(HttpContext? httpContext, AuthorizationRequest request);
     public void CreateIdentityCooky(CredentialBusinessEntity user, HttpContext httpContext);
     public void AddNewCertificate(CertificateBusinessEntity entity);
-    public CredentialBusinessEntity GetWithCertificates(int id);
+    public Task<CredentialBusinessEntity> GetWithCertificates(int id);
     public Task<CertificateBusinessEntity?> GetCertificate(int id);
     public void UpdateCertificate(CertificateBusinessEntity entity);
     public void RemoveCertificate(CertificateBusinessEntity entity);

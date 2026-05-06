@@ -75,11 +75,13 @@
             CredentialBusinessEntity? user;
             if (int.TryParse(Ident, out int id))
             {
-                user = CredentialBusiness.Get(id).ToBusiness();
+                var result = await CredentialBusiness.Get(id);
+                user = result?.ToBusiness();
             }
             else
             {
-                user = await CredentialBusiness.GetByIdent(Ident).ToBusinessAsync();
+                var result  = await CredentialBusiness.GetByIdent(Ident);
+                user = result?.ToBusiness();
             }
 
             if (user == null || !user.MustChangePwd)
@@ -109,7 +111,8 @@
                 return;
             }
 
-            var user = CredentialBusiness.Get(model.Id).ToBusiness();
+            var result = await CredentialBusiness.Get(model.Id);
+            var user = result?.ToBusiness();
             if (!user.MustChangePwd)
             {
                 errorMessage = "Vous n'avez pas les droits pour effectuer cette action.";

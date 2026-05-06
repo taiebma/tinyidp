@@ -56,7 +56,7 @@ public class CredentialBusiness : ICredentialBusiness
 
     public async Task<infrastructure.bdd.Credential?> GetByIdent(string ident)
     {
-        var result = _credentialRepository.GetByIdent(ident);
+        var result = await _credentialRepository.GetByIdent(ident);
         return result;
     }
 
@@ -78,17 +78,17 @@ public class CredentialBusiness : ICredentialBusiness
         return result;
     }
 
-    public infrastructure.bdd.Credential Get(int id)
+    public async Task<infrastructure.bdd.Credential> Get(int id)
     {
-        var result =  _credentialRepository.GetByIdReadOnly(id);
+        var result =  await _credentialRepository.GetByIdReadOnly(id);
         if (result == null)
             throw new Exception("Credential not found");
         return result;
     }
 
-    public CredentialBusinessEntity GetWithCertificates(int id)
+    public async Task<CredentialBusinessEntity> GetWithCertificates(int id)
     {
-        var result =  _credentialRepository.GetWithCertificates(id);
+        var result =  await _credentialRepository.GetWithCertificates(id);
         if (result == null)
             throw new Exception("Credential not found");
         return result.ToBusiness();

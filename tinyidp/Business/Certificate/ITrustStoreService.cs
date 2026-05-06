@@ -2,6 +2,8 @@
 using System.Security.Cryptography.X509Certificates;
 using tinyidp.Business.BusinessEntities;
 
+namespace tinyidp.Business.Certificate;
+
 public interface ITrustStoreService
 {
     public Task<bool> VerifyWithChain(X509Certificate2 cert);

@@ -1,17 +1,17 @@
 
 using tinyidp.Business.BusinessEntities;
 
-namespace tinyidp.infrastructure.keysmanagment;
+namespace tinyidp.Business.keysmanagment;
 
 public interface IKeysManagment
 {
-    public List<KidBusinessEntity> GetKeys();
-    public List<KidBusinessEntity> GetActiveKeys();
-    public KidBusinessEntity GenNewKey(AlgoType algo, string kid);
-    public KidBusinessEntity? GetKeyByKid(string kid);
-    public KidBusinessEntity? GetKeyById(int id);
-    public KidBusinessEntity? LastActive(AlgoType algo);
-    public void Update(KidBusinessEntity kid);
-    public void Remove(KidBusinessEntity kid);
-    public string GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime, string ?nonce);
+    public Task<List<KidBusinessEntity>> GetKeys();
+    public Task<List<KidBusinessEntity>> GetActiveKeys();
+    public Task<KidBusinessEntity> GenNewKey(AlgoType algo, string kid);
+    public Task<KidBusinessEntity?> GetKeyByKid(string kid);
+    public Task<KidBusinessEntity?> GetKeyById(int id);
+    public Task<KidBusinessEntity?> LastActive(AlgoType algo);
+    public Task Update(KidBusinessEntity kid);
+    public Task Remove(KidBusinessEntity kid);
+    public Task<string> GenerateJWTToken(AlgoKeyType keyType, IEnumerable<string> scopes, IEnumerable<string> audience, string? sub, long lifeTime, string ?nonce);
 }

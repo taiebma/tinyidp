@@ -6,7 +6,7 @@ using tinyidp.Business.BusinessEntities;
 using tinyidp.Encryption;
 using tinyidp.Exceptions;
 using tinyidp.infrastructure.bdd;
-using tinyidp.infrastructure.keysmanagment;
+using tinyidp.Business.keysmanagment;
 
 namespace tinyidp.Business.tokens;
 
@@ -37,7 +37,7 @@ public class TokenAuthorizationCode : ITokenStrategy
         _pkceService = pkceService;
     }
 
-    public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, infrastructure.bdd.Credential client)
+    public async Task<TokenResponseBusiness> GetTokenByType(TokenRequestBusiness request, infrastructure.bdd.Credential client)
     {
 
         if (!String.IsNullOrEmpty(client.CodeChallenge) && string.IsNullOrEmpty(request.code_verifier))
@@ -67,13 +67,13 @@ public class TokenAuthorizationCode : ITokenStrategy
         }
 
         TokenResponseBusiness resp = new TokenResponseBusiness();
-        resp.access_token = _keysManagment.GenerateJWTToken(
+        resp.access_token = await _keysManagment.GenerateJWTToken(
             (AlgoKeyType)Enum.Parse(typeof(AlgoKeyType), client.KeyType.ToString()),
-            user.Scoped?.Split(' ')??Array.Empty<string>(),
+            client.Scoped?.Split(' ')??Array.Empty<string>(),
             client.Audiences?.Split(' ')??Array.Empty<string>(),
             user.Ident,
             client.TokenMaxMinuteValidity,
-            user.Nonce);
+            client.Nonce);
         resp.id_token = resp.access_token;
 
         resp.token_type = "Bearer";

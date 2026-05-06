@@ -8,7 +8,7 @@ using tinyidp.Business.BusinessEntities;
 using tinyidp.Encryption;
 using tinyidp.Exceptions;
 using tinyidp.infrastructure.bdd;
-using tinyidp.infrastructure.keysmanagment;
+using tinyidp.Business.keysmanagment;
 
 namespace tinyidp.Business.tokens;
 
@@ -39,7 +39,7 @@ public class RefreshToken : ITokenStrategy
         _encryptionService = encryptionService;
     }
 
-    public TokenResponseBusiness GetTokenByType(TokenRequestBusiness request, infrastructure.bdd.Credential client)
+    public async Task<TokenResponseBusiness> GetTokenByType(TokenRequestBusiness request, infrastructure.bdd.Credential client)
     {
         if (client.CreationDateRefreshToken == null)
         {
@@ -63,7 +63,7 @@ public class RefreshToken : ITokenStrategy
         }
 
         TokenResponseBusiness resp = new TokenResponseBusiness();
-        resp.access_token = _keysManagment.GenerateJWTToken(
+        resp.access_token = await _keysManagment.GenerateJWTToken(
             refreshTokenResponse.Algo, refreshTokenResponse.Scopes, refreshTokenResponse.Audiences, refreshTokenResponse.Ident, refreshTokenResponse.LifeTime, null);
         resp.id_token = resp.access_token;
 

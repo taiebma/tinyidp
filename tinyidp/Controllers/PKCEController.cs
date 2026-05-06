@@ -3,33 +3,16 @@ using tinyidp.Encryption;
 
 namespace tinyidp.Controllers;
 
-[ApiController]
-[Route("[controller]")]
-public class PkceController : Controller
+public class PkceController
 {
-    private readonly ILogger _logger;
-    private readonly IConfiguration _configuration;
-    private readonly IPKCEService _pkceService;
 
-    public PkceController(ILogger<PkceController> logger, IConfiguration configuration, IPKCEService pkceService)
+    public static async Task<IResult> GenerateVerifierCode(IPKCEService pkceService,int? size)
     {
-        _logger = logger;
-        _configuration = configuration;
-        _pkceService = pkceService;
-
+        return Results.Ok(pkceService.GenerateVerifierCode(size??32));
     }
 
-    [HttpGet]
-    [Route("GenerateVerifierCode")]
-    public IActionResult GenerateVerifierCode(int? size)
+    public static async Task<IResult> GenerateChallenge(IPKCEService pkceService, [FromQuery] string code)
     {
-        return Ok(_pkceService.GenerateVerifierCode(size??32));
-    }
-
-    [HttpGet]
-    [Route("GenerateChallenge")]
-    public IActionResult GenerateChallenge([FromQuery] string code)
-    {
-        return Ok(_pkceService.GenerateCodeChallenge(code));
+        return Results.Ok(pkceService.GenerateCodeChallenge(code));
     }
 }

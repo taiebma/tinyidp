@@ -9,6 +9,7 @@ using tinyidp.infrastructure.bdd;
 using tinyidp.Extensions;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using tinyidp.Business.Certificate;
 
 namespace tinyidp.Business.tokens;
 
@@ -118,7 +119,7 @@ public class TokenService : ITokenService
         if (!tokenStrategy.VerifyClientIdent(ident, request, client, (clientCert == null)))
             throw new TinyidpTokenException("Client unauthorized", "unauthorized_client");
 
-        TokenResponseBusiness resp = tokenStrategy.GetTokenByType(request, client);
+        TokenResponseBusiness resp = await tokenStrategy.GetTokenByType(request, client);
 
         resp.refresh_token = GenerateRefreshToken(resp.refreshTokenResponse);
 

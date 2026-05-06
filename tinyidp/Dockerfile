@@ -34,6 +34,12 @@ WORKDIR /app
 COPY --from=build /app .
 RUN mkdir certs param
 COPY certs/nas2.pfx certs
+
+RUN apk update && apk add ca-certificates openssl && rm -rf /var/cache/apk/*
+COPY certs/taiebma_int.crt /usr/local/share/ca-certificates/taiebma_int.crt
+COPY certs/taiebma_ca.crt /usr/local/share/ca-certificates/taiebma_ca.crt
+RUN update-ca-certificates
+
 EXPOSE 8080/tcp
 EXPOSE 8081/tcp
 ENTRYPOINT ["dotnet", "/app/tinyidp.dll"]
