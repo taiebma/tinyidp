@@ -15,7 +15,7 @@ where T : ICachable
     public void Set(string key, T value)
     {
         var expirationTime = value.Expiration;
-        if (expirationTime.HasValue)
+        if (expirationTime.HasValue && expirationTime.Value > DateTime.Now)
         {
             DateTime curDate = DateTime.Now;
             _cache.Set(key, value, expirationTime.Value - curDate);

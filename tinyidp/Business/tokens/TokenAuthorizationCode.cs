@@ -73,7 +73,7 @@ public class TokenAuthorizationCode : ITokenStrategy
             client.Audiences?.Split(' ')??Array.Empty<string>(),
             user.Ident,
             client.TokenMaxMinuteValidity,
-            client.Nonce);
+            user.Nonce);
         resp.id_token = resp.access_token;
 
         resp.token_type = "Bearer";

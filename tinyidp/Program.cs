@@ -21,6 +21,7 @@ using tinyidp.Controllers.Models;
 using System.Threading.RateLimiting;
 using tinyidp.Business.tokens;
 using tinyidp.Components;
+using System.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -233,6 +234,52 @@ app.MapPost("/account/login-handler", async (
     return Results.Redirect("/account/login?error=invalid");
 }).RequireRateLimiting("ApiPolicy").DisableAntiforgery(); // ou gérez l'antiforgery manuellement
 
+app.MapPost("/account/ident-handler", async (
+    HttpContext context,
+    ICredentialBusiness credentialBusiness,
+    [FromForm] string login,
+    [FromForm] string password,
+    [FromForm] string? redirect_uri,
+    [FromForm] string? scope,
+    [FromForm] string? state,
+    [FromForm] string? client_id,
+    [FromForm] string? client_challenge,
+    [FromForm] string? client_challenge_method,
+    [FromForm] string? nonce)  =>
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
+        {
+            return Results.Redirect(HttpUtility.UrlEncode("/?error=L'identifiant et le mot de passe sont obligatoires."));
+        }
+
+        if (!(await credentialBusiness.VerifyPassword(login, password)))
+        {
+            return Results.Redirect(HttpUtility.UrlEncode("/?error=Identifiant ou mot de passe invalide."));
+        }
+
+        CredentialBusinessEntity? user = await credentialBusiness.GetCredentialBusinessEntityByIdent(login);
+        if (user == null)
+        {
+            return Results.Redirect(HttpUtility.UrlEncode("/?error=L'utilisateur n'existe pas."));
+        }
+
+        credentialBusiness.CreateIdentityCooky(user, context);
+
+        string url = string.Format("/oauth/authorize?response_type=code&redirect_uri={0}&scope={1}&state={2}&client_id={3}&code_challenge={4}&code_challenge_method={5}&nonce={6}",
+            HttpUtility.UrlEncode(redirect_uri), scope, state, client_id, client_challenge, client_challenge_method, nonce ?? "");
+
+        //context.Response.Redirect(url);
+        return Results.Redirect(url);
+    }
+    catch (Exception ex)
+    {
+        var errorMessage = $"Erreur : {ex.Message}";
+        return Results.Redirect(HttpUtility.UrlEncode($"/?error={errorMessage}"));
+    }
+}).RequireRateLimiting("ApiPolicy").DisableAntiforgery(); // ou gérez l'antiforgery manuellement
+
 app.MapGet("/oauth/.well-known/openid-configuration", DiscoveryController.GetConfiguration).WithName("WellKnown")
     .Produces<DiscoveryResponse>(StatusCodes.Status200OK).RequireRateLimiting("ApiPolicy");
 app.MapGet("/oauth/keys/jwks.json", KeysController.Jwks).WithName("Jwks")
@@ -247,7 +294,7 @@ app.MapPost("/oauth/token",
         context))
     .WithName("GetToken")
     .DisableAntiforgery()
-    .Accepts<TokenRequestBusiness>("multipart/form-data")
+    //.Accepts<TokenRequestBusiness>("multipart/form-data")
     .Produces<TokenResponseBusiness>(StatusCodes.Status200OK)
     .RequireRateLimiting("ApiPolicy");
 app.MapGet("/oauth/authorize", 

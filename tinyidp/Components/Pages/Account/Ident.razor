@@ -1,7 +1,8 @@
-@page "/Account/Ident"
+@page "/account/ident"
 @using System.ComponentModel.DataAnnotations
 @using System.Web
 @using Microsoft.AspNetCore.Antiforgery
+@using Microsoft.AspNetCore.WebUtilities
 @inject NavigationManager Navigation
 @inject ICredentialBusiness CredentialBusiness
 @inject ILogger<Ident> Logger
@@ -18,36 +19,39 @@
                     <h3 class="mb-0">Identification</h3>
                 </div>
                 <div class="card-body">
-                    @if (!string.IsNullOrEmpty(errorMessage))
+                    @{
+                        var uri = new Uri(Navigation.Uri);
+                        var hasError = QueryHelpers.ParseQuery(uri.Query).TryGetValue("error", out var errorValue);
+                    }
+
+                    @if (hasError)
                     {
                         <div class="alert alert-danger" role="alert">
-                            @errorMessage
+                            @errorValue
                         </div>
                     }
 
-                    <form method="post" @formname="identForm" @onsubmit="OnSubmitAsync">
+                    <form method="post" action="/account/ident-handler">
                         <AntiforgeryToken />
+                        <input type="hidden" name="scope" value="@Scope" />
+                        <input type="hidden" name="state" value="@State" />
+                        <input type="hidden" name="client_id" value="@Client_Id" />
+                        <input type="hidden" name="code_challenge" value="@Code_Challenge" />
+                        <input type="hidden" name="code_challenge_method" value="@Code_Challenge_Method" />
+                        <input type="hidden" name="nonce" value="@Nonce" />
+                        <input type="hidden" name="redirect_uri" value="@Redirect_Uri" />
                         <div class="mb-3">
-                            <label for="login" class="form-label">Identifiant</label>
-                            <InputText type="text" class="form-control" @bind-value="model!.Login" required />
+                            <label class="form-label">Identifiant</label>
+                            <input type="text" name="login" class="form-control" required />
                         </div>
 
                         <div class="mb-3">
-                            <label for="password" class="form-label">Mot de passe</label>
-                            <InputText type="password" class="form-control" @bind-value="model!.Password" required />
+                            <label class="form-label">Mot de passe</label>
+                            <input type="password" name="password" class="form-control" required />
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
-                                @if (isSubmitting)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">Connexion en cours...</span>
-                                }
-                                else
-                                {
-                                    <span>Connexion</span>
-                                }
-                            </button>
+                            <button type="submit" class="btn btn-primary">Connexion</button>
                         </div>
                     </form>
                 </div>
@@ -78,6 +82,7 @@
     [SupplyParameterFromQuery]
     public string? Nonce { get; set; }
 
+/*
     [SupplyParameterFromForm]
     private LoginModel? model  { get; set; }
 
@@ -149,4 +154,5 @@
             isSubmitting = false;
         }
     }
+    */
 }

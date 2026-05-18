@@ -75,7 +75,7 @@ public class OAuthController
         if (!(_httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated??false) &&
             _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].Count == 0)
         {
-            return Results.Redirect(String.Format("/Account/Ident?scope={0}&state={1}&nonce={2}&redirect_uri={3}&client_id={4}&code_challenge={5}&code_challenge_method={6}&nonce={7}", 
+            return Results.Redirect(String.Format("/account/ident?scope={0}&state={1}&nonce={2}&redirect_uri={3}&client_id={4}&code_challenge={5}&code_challenge_method={6}&nonce={7}", 
                 request.scope, 
                 request.state, 
                 request.nonce,

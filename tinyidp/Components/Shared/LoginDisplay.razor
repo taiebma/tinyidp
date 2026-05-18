@@ -6,7 +6,7 @@
         <span class="navbar-text me-3">
             Connecté : <strong>@context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value</strong>
         </span>
-        <a href="/Account/Logout" class="btn btn-sm btn-outline-light">Déconnexion</a>
+        <a href="/account/logout" class="btn btn-sm btn-outline-light">Déconnexion</a>
     </Authorized>
     <NotAuthorized>
         <a href="/account/login" class="btn btn-sm btn-outline-light">Connexion</a>
